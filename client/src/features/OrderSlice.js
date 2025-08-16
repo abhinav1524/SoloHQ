@@ -1,16 +1,17 @@
+import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
-  list: [], // ✅ default array so `|| []` is not needed
+  list: [],
 };
 
 const orderSlice = createSlice({
   name: "orders",
   initialState,
   reducers: {
-    setOrders: (state, action) => {
+    updateOrders: (state, action) => {   // ✅ renamed
       state.list = action.payload;
     },
   },
 });
 
-export const { setOrders } = orderSlice.actions;
+export const { updateOrders } = orderSlice.actions;  // ✅ renamed
 export default orderSlice.reducer;

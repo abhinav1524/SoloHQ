@@ -6,12 +6,10 @@ import MarketingPlanner from "./pages/MarketingPlanner";
 import FocusMode from "./pages/FocusMode";
 import Sidebar from "./components/Sidebar";
 import { useState } from "react";
-import NotificationWatcher from "./components/NotificationWatcher";
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   return (
     <Router>
-      <NotificationWatcher />
       <div className="flex">
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen}/>
         <div className="flex-1 p-4">
