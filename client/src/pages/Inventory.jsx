@@ -1,6 +1,5 @@
 // src/components/InventoryTable.jsx
 import React, { useState } from "react";
-
 const InventoryTable = () => {
   const [products, setProducts] = useState([
     { id: 1, name: "Product A", stock: 10 },
@@ -11,6 +10,7 @@ const InventoryTable = () => {
   const [newProduct, setNewProduct] = useState({ name: "", stock: "" });
   const [editingProductId, setEditingProductId] = useState(null);
 
+  // add new product
   const handleAddProduct = () => {
     if (!newProduct.name || newProduct.stock === "") return;
     setProducts([
@@ -24,12 +24,15 @@ const InventoryTable = () => {
     setNewProduct({ name: "", stock: "" });
   };
 
+  // get the product data which is want to edit 
+
   const handleEditProduct = (id) => {
     setEditingProductId(id);
     const productToEdit = products.find((p) => p.id === id);
     setNewProduct({ name: productToEdit.name, stock: productToEdit.stock });
   };
 
+  // save the edited product stock data 
   const handleSaveEdit = () => {
     setProducts(
       products.map((p) =>
@@ -41,6 +44,8 @@ const InventoryTable = () => {
     setEditingProductId(null);
     setNewProduct({ name: "", stock: "" });
   };
+
+  // delete the product 
 
   const handleDeleteProduct = (id) => {
     setProducts(products.filter((p) => p.id !== id));

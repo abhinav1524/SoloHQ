@@ -1,23 +1,28 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const initialState = {
+  notifications: [
+    { id: 1, message: "3 pending orders" },
+    { id: 2, message: "2 items low in stock" },
+    { id: 3, message: "2 order is delivered" },
+  ],
+};
+
 const notificationSlice = createSlice({
   name: "notifications",
-  initialState: {
-    notifications: []
-  },
+  initialState,
   reducers: {
     addNotification: (state, action) => {
-      state.notifications.push(action.payload);
+      state.notifications.push({
+        id: Date.now(),
+        message: action.payload,
+      });
     },
-    markAsRead: (state, action) => {
-      const notification = state.notifications.find(n => n.id === action.payload);
-      if (notification) notification.read = true;
-    },
-    clearNotification: (state) => {
+    clearNotifications: (state) => {
       state.notifications = [];
-    }
-  }
+    },
+  },
 });
 
-export const { addNotification, markAsRead, clearNotification } = notificationSlice.actions;
+export const { addNotification, clearNotifications } = notificationSlice.actions;
 export default notificationSlice.reducer;

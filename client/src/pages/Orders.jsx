@@ -1,10 +1,6 @@
 import { useState,useEffect } from "react";
 import Modal from "../components/Modal";
-import { addNotification } from "../features/NotificationSlice"; 
-import { updateOrders } from "../features/OrderSlice"; 
-import { useDispatch } from "react-redux";
 const Orders = () => {
-    const dispatch = useDispatch();
 
   const [orders, setOrders] = useState([
     { id: 1, customer: "John Doe", product: "T-Shirt", date: "2025-08-10", status: "Pending" },
@@ -56,7 +52,6 @@ const Orders = () => {
     };
 
     setOrders([newOrder, ...orders]);
-    dispatch(updateOrders([newOrder]));
 
     // Reset form
     setNewCustomer("");
