@@ -1,8 +1,8 @@
 // controllers/productController.js
-import Product from "../models/productModel.js";
-import { sendWhatsAppMessage } from "../services/whatsappService.js";
+const Product = require("../models/productModel.js");
+const { sendWhatsAppMessage } = require("../services/whatsappService.js");
 
-export const checkLowInventory = async (req, res) => {
+ const checkLowInventory = async (req, res) => {
   try {
     // find all products with stock less than 5
     const lowStockProducts = await Product.find({ stock: { $lt: 5 } });
@@ -21,3 +21,4 @@ export const checkLowInventory = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+module.exports=checkLowInventory;

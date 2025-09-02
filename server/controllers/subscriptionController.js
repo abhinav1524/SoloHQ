@@ -1,7 +1,7 @@
-import Subscription from "../models/Subscription.js";
+const Subscription = require("../models/Subscription.js");
 
 // Create a subscription plan (admin only)
-export const createSubscription = async (req, res) => {
+ const createSubscription = async (req, res) => {
   try {
     const { planName, price, durationInMonths, features } = req.body;
 
@@ -20,7 +20,7 @@ export const createSubscription = async (req, res) => {
 };
 
 // Get all subscription plans (public)
-export const getSubscriptions = async (req, res) => {
+ const getSubscriptions = async (req, res) => {
   try {
     const plans = await Subscription.find();
     res.status(200).json({ success: true, data: plans });
@@ -30,7 +30,7 @@ export const getSubscriptions = async (req, res) => {
 };
 
 // Get single subscription plan
-export const getSubscriptionById = async (req, res) => {
+ const getSubscriptionById = async (req, res) => {
   try {
     const plan = await Subscription.findById(req.params.id);
     if (!plan) return res.status(404).json({ success: false, message: "Plan not found" });
@@ -42,7 +42,7 @@ export const getSubscriptionById = async (req, res) => {
 };
 
 // Update subscription plan (admin)
-export const updateSubscription = async (req, res) => {
+ const updateSubscription = async (req, res) => {
   try {
     const updatedPlan = await Subscription.findByIdAndUpdate(
       req.params.id,
@@ -59,7 +59,7 @@ export const updateSubscription = async (req, res) => {
 };
 
 // Delete subscription plan (admin)
-export const deleteSubscription = async (req, res) => {
+ const deleteSubscription = async (req, res) => {
   try {
     const deletedPlan = await Subscription.findByIdAndDelete(req.params.id);
 
@@ -70,3 +70,4 @@ export const deleteSubscription = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+module.exports={createSubscription,getSubscriptions,getSubscriptionById,updateSubscription,deleteSubscription}

@@ -1,11 +1,11 @@
-import express from "express";
-import {
+const  express =require("express");
+const {
   createSubscription,
   getSubscriptions,
   getSubscriptionById,
   updateSubscription,
   deleteSubscription,
-} from "../controllers/subscriptionController.js";
+} = require ("../controllers/subscriptionController.js");
 
 const router = express.Router();
 
@@ -18,4 +18,4 @@ router.post("/", createSubscription);
 router.put("/:id", updateSubscription);
 router.delete("/:id", deleteSubscription);
 
-export default router;
+module.exports = router;

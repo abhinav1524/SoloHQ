@@ -1,10 +1,10 @@
 // services/whatsappService.js
-import axios from "axios";
+const axios =require("axios");
 
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN; 
 const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID;
 
-export const sendWhatsAppMessage = async (to, message) => {
+const sendWhatsAppMessage = async (to, message) => {
   try {
     await axios.post(
       `https://graph.facebook.com/v17.0/${WHATSAPP_PHONE_ID}/messages`,
@@ -27,3 +27,5 @@ export const sendWhatsAppMessage = async (to, message) => {
     console.error("❌ WhatsApp Error:", error.response?.data || error.message);
   }
 };
+
+module.exports={sendWhatsAppMessage};
