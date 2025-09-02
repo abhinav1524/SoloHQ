@@ -5,7 +5,6 @@ import Inventory from "./pages/Inventory";
 import MarketingPlanner from "./pages/MarketingPlanner";
 import FocusMode from "./pages/FocusMode";
 import Sidebar from "./components/Sidebar";
-import Test from "./pages/Test"
 import { useState } from "react";
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
