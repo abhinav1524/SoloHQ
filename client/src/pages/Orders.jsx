@@ -1,13 +1,16 @@
 import { useState,useEffect } from "react";
+import { getOrders } from "../services/orderService";
 import Modal from "../components/Modal";
 const Orders = () => {
 
-  const [orders, setOrders] = useState([
-    { id: 1, customer: "John Doe", product: "T-Shirt", date: "2025-08-10", status: "Pending" },
-    { id: 2, customer: "Jane Smith", product: "Shoes", date: "2025-08-09", status: "Completed" },
-    { id: 3, customer: "Mike Ross", product: "Cap", date: "2025-08-11", status: "Pending" },
-    { id: 4, customer: "Rachel Zane", product: "Bag", date: "2025-08-08", status: "Cancelled" },
-  ]);
+  const [orders, setOrders] = useState([]);
+  useEffect(() => {
+    async function fetchOrders(){
+      const data=await getOrders();
+      setOrders(data);
+    }
+    fetchOrders();
+  }, []);
 
   const [filter, setFilter] = useState("All");
   const [showAddForm, setShowAddForm] = useState(false);

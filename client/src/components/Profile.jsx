@@ -1,10 +1,11 @@
 import { useState,useRef } from "react";
-
+import { useAuth } from "../context/AuthContext";
+import api from "../services/api";
 export default function Profile() {
   const [profilePic, setProfilePic] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef(null);
-
+  const { setUser } = useAuth();
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -12,6 +13,14 @@ export default function Profile() {
       setProfilePic(imageUrl);
     }
   };
+  const logout = async () => {
+  try {
+    await api.post("/auth/logout");
+    setUser(null); // clears context
+  } catch (err) {
+    console.error("Logout failed:", err.response?.data || err.message);
+  }
+};
 
   return (
     <div className="relative">
@@ -45,7 +54,7 @@ export default function Profile() {
           </button>
           <button
             className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 cursor-pointer"
-            onClick={() => alert("Logout clicked")}
+            onClick={() =>logout()}
           >
             Logout
           </button>
