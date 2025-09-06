@@ -1,24 +1,62 @@
 // src/pages/Register.jsx
 import { useState } from "react";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import api from "../services/api";
 
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" }); // clear error on change
+  };
+
+  const validateForm = () => {
+    let newErrors = {};
+
+    // name validation
+    if (!form.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+
+    // email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email) {
+      newErrors.email = "Email is required";
+    } else if (!emailRegex.test(form.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    // password validation
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!form.password) {
+      newErrors.password = "Password is required";
+    } else if (!passwordRegex.test(form.password)) {
+      newErrors.password =
+        "Password must be at least 8 chars, include 1 uppercase, 1 lowercase, 1 number & 1 special char";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // valid if no errors
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return; // stop if validation fails
     setLoading(true);
     try {
       const res = await api.post("/auth/register", form);
-      alert(res.data.message || "Registered successfully!");
+      toast.success(res.data.message || "Registered successfully! 🎉");
+      setForm({ name: "", email: "", password: "" });
+      navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.message || "Registration failed");
+      toast.error(err.response?.data?.message || "Registration failed ❌");
     } finally {
       setLoading(false);
     }
@@ -57,10 +95,12 @@ export default function Register() {
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                required
-                className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                className={`w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition ${
+                  errors.name ? "border-red-500 focus:ring-red-500" : "focus:ring-indigo-500"
+                }`}
                 placeholder="John Doe"
               />
+              {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
             </div>
 
             <div>
@@ -68,14 +108,16 @@ export default function Register() {
                 Email
               </label>
               <input
-                type="email"
+                type="text"
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                required
-                className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                className={`w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition ${
+                  errors.email ? "border-red-500 focus:ring-red-500" : "focus:ring-indigo-500"
+                }`}
                 placeholder="you@example.com"
               />
+              {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
             </div>
 
             <div>
@@ -87,10 +129,12 @@ export default function Register() {
                 name="password"
                 value={form.password}
                 onChange={handleChange}
-                required
-                className="w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                className={`w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition ${
+                  errors.password ? "border-red-500 focus:ring-red-500" : "focus:ring-indigo-500"
+                }`}
                 placeholder="••••••••"
               />
+              {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
             </div>
 
             <button

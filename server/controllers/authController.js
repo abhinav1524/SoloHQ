@@ -88,6 +88,10 @@ const login = async (req, res) => {
 
     if (user && (await user.matchPassword(password))) {
       sendTokenResponse(user, 200, res);
+      // reseting the limiter after successfull login.
+       if (req.rateLimit) {
+      req.rateLimit.resetKey(req.ip);
+    }
     } else {
       res.status(401).json({ message: "Invalid email or password" });
     }

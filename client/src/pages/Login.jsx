@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import api from "../services/api"
+import api from "../services/api";
+import toast from "react-hot-toast";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -21,13 +22,15 @@ export default function Login() {
     console.log("Login submitted:", form);
     try {
         const res =await api.post("/auth/login",form)
-        console.log(res);
+        // console.log(res);
         setUser(res.data); 
         navigate("/")
-        alert("login successfull")
+        toast.success(res.data.message || "login successfully! 🎉");
     } catch (error) {
-        alert("login failed !")
-        console.log("error",error)
+        toast.error(error.response?.data?.message || "login failed ❌");
+        // console.log("error",error)
+    }finally{
+      setLoading(false)
     }
   };
 
@@ -85,6 +88,7 @@ export default function Login() {
           {/* Submit */}
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-gradient-to-r from-indigo-500 to-pink-500 hover:opacity-90 text-white font-semibold py-3 rounded-xl transition-all duration-200 shadow-lg"
           >
             {loading ? "logging in..." : "Sign In"}

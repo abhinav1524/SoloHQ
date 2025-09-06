@@ -10,11 +10,13 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import {useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { Toaster } from "react-hot-toast";
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
   return (
     <Router>
+      <Toaster position="top-right" reverseOrder={false} />
       {user ? (
         // Layout with Sidebar (only for logged-in users)
         <div className="flex">
