@@ -17,7 +17,7 @@ const getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .sort({ createdAt: -1 })
-      .populate("customer", "name phone email"); // populate customer details
+      .populate("customerId", "name phone email"); // populate customer details
 
     const formattedOrders = orders.map((order) => ({
       ...order.toObject(),
@@ -72,6 +72,69 @@ const addOrder = async (req, res) => {
   }
 };
 
+// Update Order
+const updateOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    let { product, quantity, status, date, notes } = req.body;
+
+    if (date && date.includes("/")) {
+      const [day, month, year] = date.split("/");
+      date = new Date(`${year}-${month}-${day}`);
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    order.product = product !== undefined ? product : order.product;
+    order.quantity = quantity !== undefined ? quantity : order.quantity;
+    order.status = status !== undefined ? status : order.status;
+    order.date = date !== undefined ? date : order.date;
+    order.notes = notes !== undefined ? notes : order.notes;
+
+    await order.save();
+
+    // Send WhatsApp notification on update (optional)
+    const customer = await Customer.findById(order.customerId);
+    if (customer && customer.phone) {
+      await sendWhatsAppMessage(
+        customer.phone,
+        `📦 Hi ${customer.name}, your order for ${order.quantity} x ${order.product} has been updated. Status: ${order.status}`
+      );
+    }
+
+    res.status(200).json({
+      ...order.toObject(),
+      date: formatDate(order.date),
+    });
+  } catch (error) {
+    console.error("Order update error:", error);
+    res.status(500).json({ message: "Error updating order", error: error.message });
+  }
+};
+
+// Delete Order
+const deleteOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    await Order.findByIdAndDelete(orderId);
+
+    res.status(200).json({ message: "Order deleted successfully" });
+  } catch (error) {
+    console.error("Order deletion error:", error);
+    res.status(500).json({ message: "Error deleting order", error: error.message });
+  }
+};
+
+
 // Update order status
 const updateOrderStatus = async (req, res) => {
   try {
@@ -102,4 +165,4 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-module.exports = { getOrders, addOrder, updateOrderStatus };
+module.exports = { getOrders, addOrder,updateOrder,deleteOrder,updateOrderStatus };

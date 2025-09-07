@@ -8,6 +8,7 @@ import Sidebar from "./components/Sidebar";
 import { useState } from "react";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import Customer from "./pages/Customers";
 import {useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
@@ -27,6 +28,7 @@ function App() {
               <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
               <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
               <Route path="/marketing" element={<ProtectedRoute><MarketingPlanner /></ProtectedRoute>} />
+              <Route path="/customer" element={<ProtectedRoute><Customer/></ProtectedRoute>} />
               <Route path="/focus" element={<FocusMode />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

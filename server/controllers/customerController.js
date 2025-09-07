@@ -6,10 +6,10 @@ const { sendWhatsappMessage } = require("../services/whatsappService");
 // @route   POST /api/customers
 const addCustomer = async (req, res) => {
   try {
-    const { name, phone, address, notes } = req.body;
+    const { name, phone,email, address, notes } = req.body;
 
-    const customer = await Customer.create({ name, phone, address, notes });
-    res.status(201).json(customer);
+    const customer = await Customer.create({ name, phone, email, address, notes });
+    res.status(201).json({message: "Customer added successfully! 🎉",customer});
   } catch (error) {
     res.status(500).json({ message: "Error adding customer", error });
   }
@@ -48,7 +48,7 @@ const updateCustomer = async (req, res) => {
 
     if (!customer) return res.status(404).json({ message: "Customer not found" });
 
-    res.json(customer);
+    res.json({ message: "Customer update Successfully ",customer});
   } catch (error) {
     res.status(500).json({ message: "Error updating customer", error });
   }

@@ -38,6 +38,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           <Link to="/inventory" className="flex items-center space-x-2 text-gray-600">
             <Package size={20} /> <span>Inventory</span>
           </Link>
+          <Link to="/customer" className="flex items-center space-x-2 text-gray-600">
+            <Package size={20} /> <span>Customer</span>
+          </Link>
           <Link to="/marketing" className="flex items-center space-x-2 text-gray-600">
             <Megaphone size={20} /> <span>Marketing</span>
           </Link>
