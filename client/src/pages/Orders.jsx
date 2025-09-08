@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { getOrders } from "../services/orderService";
+import { getOrders,createOrder,updateOrder,deleteOrder } from "../services/orderService";
 import Modal from "../components/Modal";
 import { Edit, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -11,12 +12,13 @@ const Orders = () => {
   const [editingOrder, setEditingOrder] = useState(null);
 
   // Form state
+  const [newId, setNewId] = useState("");
   const [newQuantity, setNewQuantity] = useState("");
   const [newProduct, setNewProduct] = useState("");
   const [newDate, setNewDate] = useState(() =>
     new Date().toISOString().slice(0, 10)
   );
-  const [newStatus, setNewStatus] = useState("Pending");
+  const [newStatus, setNewStatus] = useState("pending");
 
   const [editQuantity, setEditQuantity] = useState("");
   const [editProduct, setEditProduct] = useState("");
@@ -46,31 +48,39 @@ const Orders = () => {
   };
 
   // Add Order
-  const handleAddOrder = (e) => {
-    e.preventDefault();
-    const quantityNumber = Number(newQuantity); // convert here
-    if (!newProduct.trim() || !quantityNumber || quantityNumber <= 0) {
-      alert("Please fill product and quantity correctly.");
-      return;
-    }
+const handleAddOrder = async (e) => {
+  e.preventDefault();
+  const quantityNumber = Number(newQuantity);
+  if (!newId || !newProduct.trim() || !quantityNumber || quantityNumber <= 0) {
+    toast.error("Please fill product and quantity correctly ❌");
+    return;
+  }
 
-    const newOrder = {
-      _id: Math.random().toString(36).substr(2, 9),
+  try {
+    // Call backend API
+    const newOrder = await createOrder({
+      customerId: newId, // ⚠️ pass actual customerId from UI or state
       product: newProduct,
       quantity: quantityNumber,
       date: newDate,
       status: newStatus,
-    };
+    });
 
+    // Update local state with backend response
     setOrders([newOrder, ...orders]);
 
     // Reset form
     setNewProduct("");
     setNewQuantity("");
     setNewDate(new Date().toISOString().slice(0, 10));
-    setNewStatus("Pending");
+    setNewStatus("pending");
     setShowAddForm(false);
-  };
+    toast.success("Order added successfully 🎉");
+  } catch (error) {
+    console.error("Error adding order:", error);
+    toast.error(error.response?.data?.message || "Unable to add order ❌");
+  }
+};
 
   // Edit Order
   const handleEditClick = (order) => {
@@ -82,34 +92,55 @@ const Orders = () => {
     setShowEditForm(true);
   };
 
-  const handleEditOrder = (e) => {
-    e.preventDefault();
-    const quantityNumber = Number(editQuantity);
-    if (!editProduct.trim() || !quantityNumber || quantityNumber <= 0) {
-      alert("Please fill product and quantity correctly.");
-      return;
-    }
+  const handleEditOrder = async (e) => {
+  e.preventDefault();
+
+  const quantityNumber = Number(editQuantity);
+
+  if (!editProduct.trim() || !quantityNumber || quantityNumber <= 0) {
+    toast.error("Please fill product and quantity correctly ❌");
+    return;
+  }
+
+  try {
+    // Call backend API with the order ID and updated fields
+    const updated = await updateOrder(editingOrder._id, {
+      product: editProduct,
+      quantity: quantityNumber,
+      date: editDate,
+      status: editStatus,
+    });
+
+    // Update local state with backend response
     setOrders(
       orders.map((order) =>
-        order._id === editingOrder._id
-          ? {
-              ...order,
-              product: editProduct,
-              quantity: quantityNumber,
-              date: editDate,
-              status: editStatus,
-            }
-          : order
+        order._id === editingOrder._id ? updated : order
       )
     );
+
     setShowEditForm(false);
-  };
+    toast.success("Order updated successfully 🎉");
+  } catch (error) {
+    console.error("Error updating order:", error);
+    toast.error(error.response?.data?.message || "Unable to update order ❌");
+  }
+};
+
 
   // Delete Order
-  const handleDeleteOrder = (id) => {
-    if (!window.confirm("Are you sure you want to delete this order?")) return;
-    setOrders(orders.filter((order) => order._id !== id));
-  };
+const handleDeleteOrder = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this order?")) return;
+
+  try {
+    await deleteOrder(id); // call backend API
+    setOrders(orders.filter((order) => order._id !== id)); // update UI
+    toast.success("Order deleted successfully 🗑️");
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    toast.error(error.response?.data?.message || "Unable to delete order ❌");
+  }
+};
+
 
   const pendingCount = orders.filter((o) => o.status === "Pending").length;
   const completedCount = orders.filter((o) => o.status === "Completed").length;
@@ -179,6 +210,17 @@ const Orders = () => {
       {/* Add Modal */}
       <Modal isOpen={showAddForm} onClose={() => setShowAddForm(false)}>
         <form onSubmit={handleAddOrder} className="space-y-4">
+           <div>
+            <label className="block mb-1 font-medium">Customer Id</label>
+            <input
+              type="text"
+              value={newId}
+              onChange={(e) => setNewId(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+            />
+          </div>
+
           <div>
             <label className="block mb-1 font-medium">Product</label>
             <input
@@ -219,9 +261,9 @@ const Orders = () => {
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
             >
-              <option value="Pending">Pending</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="cancel">Cancelled</option>
             </select>
           </div>
           <div className="flex justify-end gap-2">
@@ -283,9 +325,9 @@ const Orders = () => {
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
             >
-              <option value="Pending">Pending</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="cancel">Cancelled</option>
             </select>
           </div>
           <div className="flex justify-end gap-2">

@@ -40,7 +40,7 @@ const addOrder = async (req, res) => {
       date = new Date(`${year}-${month}-${day}`);
     }
 
-    const order = await Order.create({
+    let order = await Order.create({
       customerId,
       product,
       quantity,
@@ -50,15 +50,16 @@ const addOrder = async (req, res) => {
     });
 
     // Find customer to get details for WhatsApp notification
-    const customer = await Customer.findById(customerId);
+    // const customer = await Customer.findById(customerId);
 
-    if (customer && customer.phone) {
-      await sendWhatsAppMessage(
-        customer.phone,
-        `📦 Hi ${customer.name}, your order for ${quantity} x ${product} has been placed successfully!`
-      );
-    }
-
+    // if (customer && customer.phone) {
+    //   await sendWhatsAppMessage(
+    //     customer.phone,
+    //     `📦 Hi ${customer.name}, your order for ${quantity} x ${product} has been placed successfully!`
+    //   );
+    // }
+    // populate customer fields (adjust which fields you want)
+    order = await order.populate("customerId");
     // format date before sending response
     res.status(201).json({
       ...order.toObject(),
@@ -75,7 +76,7 @@ const addOrder = async (req, res) => {
 // Update Order
 const updateOrder = async (req, res) => {
   try {
-    const { orderId } = req.params;
+    const orderId  = req.params.id;
     let { product, quantity, status, date, notes } = req.body;
 
     if (date && date.includes("/")) {
@@ -83,7 +84,7 @@ const updateOrder = async (req, res) => {
       date = new Date(`${year}-${month}-${day}`);
     }
 
-    const order = await Order.findById(orderId);
+    let order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
@@ -96,15 +97,8 @@ const updateOrder = async (req, res) => {
 
     await order.save();
 
-    // Send WhatsApp notification on update (optional)
-    const customer = await Customer.findById(order.customerId);
-    if (customer && customer.phone) {
-      await sendWhatsAppMessage(
-        customer.phone,
-        `📦 Hi ${customer.name}, your order for ${order.quantity} x ${order.product} has been updated. Status: ${order.status}`
-      );
-    }
-
+    // ✅ Populate customer info
+    order = await order.populate("customerId");
     res.status(200).json({
       ...order.toObject(),
       date: formatDate(order.date),
@@ -118,8 +112,7 @@ const updateOrder = async (req, res) => {
 // Delete Order
 const deleteOrder = async (req, res) => {
   try {
-    const { orderId } = req.params;
-
+    const orderId  = req.params.id;
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
