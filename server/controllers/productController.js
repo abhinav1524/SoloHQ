@@ -1,14 +1,13 @@
 // controllers/productController.js
-const Product = require("../models/productModel.js");
+const Product = require("../models/Product.js");
 const { sendWhatsAppMessage } = require("../services/whatsappService.js");
-
 // ✅ Create product
 const createProduct = async (req, res) => {
   try {
     const { name, description, price, stock, category, brand } = req.body;
 
-    if (!name || !price || !stock) {
-      return res.status(400).json({ message: "Name, price, and stock are required" });
+    if (!name || !description || !price || !stock || !category ||!brand) {
+      return res.status(400).json({ message: "Name, description, price , stock ,category , brand are required" });
     }
 
     const product = new Product({

@@ -7,7 +7,7 @@ import {
 } from "../services/customerServices";
 import Modal from "../components/Modal";
 import toast from "react-hot-toast";
-
+import { Edit, Trash2 } from "lucide-react";
 const Customers = () => {
   const [customers, setCustomers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -181,15 +181,15 @@ const handleDeleteCustomer = async (id) => {
                       setAddress(cust.address);
                       setShowEditForm(true);
                     }}
-                    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                    className="px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
                   >
-                    Edit
+                    <Edit size={18} />
                   </button>
                   <button
                     onClick={() => handleDeleteCustomer(cust._id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                   >
-                    Delete
+                    <Trash2 size={18} />
                   </button>
                 </td>
               </tr>

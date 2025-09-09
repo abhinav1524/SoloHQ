@@ -1,4 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  getCampaigns,
+  addCampaign,
+  updateCampaign,
+  deleteCampaign,
+} from "../services/marketingService"; // adjust path if needed
+import toast from "react-hot-toast";
+import { Edit, Trash2 } from "lucide-react";
 
 const MarketingPlanner = () => {
   const [campaigns, setCampaigns] = useState([]);
@@ -11,57 +19,95 @@ const MarketingPlanner = () => {
   });
   const [editingId, setEditingId] = useState(null);
 
+  // ✅ Fetch campaigns when component mounts
+  useEffect(() => {
+    fetchCampaigns();
+  }, []);
+
+  const fetchCampaigns = async () => {
+    try {
+      const data = await getCampaigns();
+      setCampaigns(data);
+    } catch (error) {
+      toast.error("Failed to fetch campaigns ❌");
+      console.error(error);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewCampaign({ ...newCampaign, [name]: value });
   };
 
-  const addOrUpdateCampaign = () => {
-    if (!newCampaign.title || !newCampaign.startDate) return;
-
-    if (editingId) {
-      // Update existing campaign
-      setCampaigns(
-        campaigns.map((c) =>
-          c.id === editingId ? { ...newCampaign, id: editingId } : c
-        )
-      );
-      setEditingId(null);
-    } else {
-      // Add new campaign
-      setCampaigns([...campaigns, { ...newCampaign, id: Date.now() }]);
+  // ✅ Add or update campaign
+  const addOrUpdateCampaign = async () => {
+    if (!newCampaign.title || !newCampaign.startDate) {
+      toast.warning("Title and start date are required ⚠️");
+      return;
     }
 
-    setNewCampaign({
-      title: "",
-      description: "",
-      channel: "WhatsApp",
-      startDate: "",
-      endDate: "",
-    });
+    try {
+      if (editingId) {
+        // Update campaign
+        const updated = await updateCampaign(editingId, newCampaign);
+        setCampaigns(
+          campaigns.map((c) => (c._id === editingId ? updated : c))
+        );
+        setEditingId(null);
+        toast.success("Campaign updated ✅");
+      } else {
+        // Add campaign
+        const created = await addCampaign(newCampaign);
+        setCampaigns([created, ...campaigns]);
+        toast.success("Campaign created 🎉");
+      }
+
+      // Reset form
+      setNewCampaign({
+        title: "",
+        description: "",
+        channel: "WhatsApp",
+        startDate: "",
+        endDate: "",
+      });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to save campaign ❌");
+      console.error(error);
+    }
   };
 
   const handleEdit = (id) => {
-    const campaign = campaigns.find((c) => c.id === id);
+    const campaign = campaigns.find((c) => c._id === id);
+    if (!campaign) return;
+
     setNewCampaign({
       title: campaign.title,
       description: campaign.description,
       channel: campaign.channel,
-      startDate: campaign.startDate,
-      endDate: campaign.endDate,
+      startDate: campaign.startDate?.split("T")[0] || "",
+      endDate: campaign.endDate?.split("T")[0] || "",
     });
     setEditingId(id);
   };
 
-  const handleDelete = (id) => {
-    setCampaigns(campaigns.filter((c) => c.id !== id));
-    if (editingId === id) setEditingId(null);
+  const handleDelete = async (id) => {
+    try {
+      await deleteCampaign(id);
+      setCampaigns(campaigns.filter((c) => c._id !== id));
+      toast.success("Campaign deleted 🗑️");
+      if (editingId === id) setEditingId(null);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to delete ❌");
+      console.error(error);
+    }
   };
 
   return (
     <div className="w-full max-w-5xl mx-auto p-4">
       {/* Header */}
-      <h1 className="text-2xl font-bold text-center mb-6">📅 Marketing Planner</h1>
+      <h1 className="text-2xl font-bold text-center mb-6">
+        📅 Marketing Planner
+      </h1>
 
       {/* Campaign Form */}
       <div className="bg-white shadow-md rounded-lg p-4 mb-6">
@@ -112,53 +158,55 @@ const MarketingPlanner = () => {
         </div>
         <button
           onClick={addOrUpdateCampaign}
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 cursor-pointer"
         >
           {editingId ? "Update Campaign" : "Add Campaign"}
         </button>
       </div>
 
       {/* Campaign List */}
-      <div className="bg-white shadow-md rounded-lg p-4">
-        <h2 className="text-lg font-semibold mb-3">📌 Planned Campaigns</h2>
-        {campaigns.length === 0 ? (
-          <p className="text-gray-500">No campaigns planned yet.</p>
-        ) : (
-          <ul className="space-y-4">
-            {campaigns.map((c) => (
-              <li
-                key={c.id}
-                className="p-4 border rounded flex flex-col md:flex-row md:justify-between md:items-center"
+     <div className="bg-white shadow-md rounded-lg p-4">
+  <h2 className="text-lg font-semibold mb-3">📌 Planned Campaigns</h2>
+  {campaigns.length === 0 ? (
+    <p className="text-gray-500">No campaigns planned yet.</p>
+  ) : (
+    <div className="max-h-80 overflow-y-auto pr-2">
+      <ul className="space-y-4">
+        {campaigns.map((c) => (
+          <li
+            key={c._id}
+            className="p-4 border rounded flex flex-col md:flex-row md:justify-between md:items-center"
+          >
+            <div>
+              <h3 className="font-bold text-lg">{c.title}</h3>
+              <p className="text-sm text-gray-600">{c.description}</p>
+              <p className="text-xs text-gray-500">
+                {c.startDate?.split("T")[0]} → {c.endDate?.split("T")[0]}
+              </p>
+            </div>
+            <div className="flex gap-2 mt-2 md:mt-0">
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 text-xs rounded">
+                {c.channel}
+              </span>
+              <button
+                className="bg-yellow-400 text-white px-2 py-2 rounded text-sm"
+                onClick={() => handleEdit(c._id)}
               >
-                <div>
-                  <h3 className="font-bold text-lg">{c.title}</h3>
-                  <p className="text-sm text-gray-600">{c.description}</p>
-                  <p className="text-xs text-gray-500">
-                    {c.startDate} → {c.endDate}
-                  </p>
-                </div>
-                <div className="flex gap-2 mt-2 md:mt-0">
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 text-xs rounded">
-                    {c.channel}
-                  </span>
-                                    <button
-                    className="bg-yellow-400 text-white px-2 py-1 rounded text-sm"
-                    onClick={() => handleEdit(c.id)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="bg-red-500 text-white px-2 py-1 rounded text-sm"
-                    onClick={() => handleDelete(c.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                <Edit size={18} />
+              </button>
+              <button
+                className="bg-red-500 text-white px-2 py-2 rounded text-sm"
+                onClick={() => handleDelete(c._id)}
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>
     </div>
   );
 };
