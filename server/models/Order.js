@@ -13,6 +13,7 @@ const orderSchema = new mongoose.Schema(  {
       enum: ["pending", "complete", "cancel"], 
       default: "pending",
     },
+    price: { type: Number, required: true },
     date: { type: Date, default: Date.now },
     notes: { type: String }, 
   },

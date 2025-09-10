@@ -38,7 +38,7 @@ const sendTokenResponse = (user, statusCode, res) => {
   const options = {
     httpOnly: true, // prevents JS access (XSS protection)
     secure: process.env.NODE_ENV === "production", // only send cookie over https in production
-    sameSite: "strict", // protect against CSRF
+    sameSite: "lax", // protect against CSRF
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   };
 
@@ -88,17 +88,21 @@ const login = async (req, res) => {
 
     if (user && (await user.matchPassword(password))) {
       sendTokenResponse(user, 200, res);
-      // reseting the limiter after successfull login.
-       if (req.rateLimit) {
-      req.rateLimit.resetKey(req.ip);
-    }
+
+      // reset limiter after success
+      if (req.rateLimit) {
+        req.rateLimit.resetKey(req.ip);
+      }
+
+      return; // ✅ stop execution after response
     } else {
-      res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" }); // ✅ add return
     }
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" }); // ✅ add return
   }
 };
+
 
 // Logout → clear cookie
 const logout = (req, res) => {

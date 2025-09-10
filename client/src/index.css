@@ -1,1 +1,4 @@
 @import "tailwindcss";
+tr {
+  vertical-align: middle; /* ensure all cells align vertically */
+}

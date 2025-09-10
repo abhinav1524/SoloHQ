@@ -1,5 +1,5 @@
 const express = require("express");
-const { getOrders, addOrder,updateOrder,deleteOrder, updateOrderStatus } = require("../controllers/orderController");
+const { getOrders,getFilterOrders, addOrder,updateOrder,deleteOrder, updateOrderStatus,getTodaySale } = require("../controllers/orderController");
 const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();
 
@@ -9,6 +9,8 @@ router.get("/", getOrders);
 router.post("/", addOrder);
 router.put("/:id", updateOrder);
 router.delete("/:id", deleteOrder);
-router.put("status/:id", updateOrderStatus);
+router.put("/status/:id", updateOrderStatus);
+router.get("/status", getFilterOrders);
+router.get("/todaysales", getTodaySale);
 
 module.exports = router;

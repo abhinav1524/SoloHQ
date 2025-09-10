@@ -9,6 +9,7 @@ import { useState } from "react";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Customer from "./pages/Customers";
+import PageNotFound from "./pages/PageNotFound";
 import {useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from "react-hot-toast";
@@ -40,7 +41,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           {/* Default redirect if not logged in */}
-          <Route path="*" element={<Navigate to="/login" />} />
+          <Route path="*" element={<PageNotFound/>} />
         </Routes>
       )}
     </Router>

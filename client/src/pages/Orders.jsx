@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState("all");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
@@ -14,6 +14,7 @@ const Orders = () => {
   // Form state
   const [newId, setNewId] = useState("");
   const [newQuantity, setNewQuantity] = useState("");
+  const [newPrice, setNewPrice] = useState("");
   const [newProduct, setNewProduct] = useState("");
   const [newDate, setNewDate] = useState(() =>
     new Date().toISOString().slice(0, 10)
@@ -21,6 +22,7 @@ const Orders = () => {
   const [newStatus, setNewStatus] = useState("pending");
 
   const [editQuantity, setEditQuantity] = useState("");
+  const [editPrice, setEditPrice] = useState("");
   const [editProduct, setEditProduct] = useState("");
   const [editDate, setEditDate] = useState("");
   const [editStatus, setEditStatus] = useState("");
@@ -51,8 +53,9 @@ const Orders = () => {
 const handleAddOrder = async (e) => {
   e.preventDefault();
   const quantityNumber = Number(newQuantity);
-  if (!newId || !newProduct.trim() || !quantityNumber || quantityNumber <= 0) {
-    toast.error("Please fill product and quantity correctly ❌");
+  const newPriceNumber = Number(newPrice);
+  if (!newId.trim() || !newProduct.trim() || !quantityNumber || !newPriceNumber  || quantityNumber <= 0) {
+    toast.error("All fields should be filled correctly ❌");
     return;
   }
 
@@ -62,6 +65,7 @@ const handleAddOrder = async (e) => {
       customerId: newId, // ⚠️ pass actual customerId from UI or state
       product: newProduct,
       quantity: quantityNumber,
+      price:newPriceNumber,
       date: newDate,
       status: newStatus,
     });
@@ -72,6 +76,7 @@ const handleAddOrder = async (e) => {
     // Reset form
     setNewProduct("");
     setNewQuantity("");
+    setNewPrice("");
     setNewDate(new Date().toISOString().slice(0, 10));
     setNewStatus("pending");
     setShowAddForm(false);
@@ -87,6 +92,7 @@ const handleAddOrder = async (e) => {
     setEditingOrder(order);
     setEditProduct(order.product);
     setEditQuantity(order.quantity);
+    setEditPrice(order.price);
     setEditDate(formatDateForInput(order.date));
     setEditStatus(order.status);
     setShowEditForm(true);
@@ -96,9 +102,9 @@ const handleAddOrder = async (e) => {
   e.preventDefault();
 
   const quantityNumber = Number(editQuantity);
-
-  if (!editProduct.trim() || !quantityNumber || quantityNumber <= 0) {
-    toast.error("Please fill product and quantity correctly ❌");
+  const editPriceNumber=Number(editPrice);
+  if (!editProduct.trim() || !quantityNumber || !editPriceNumber || quantityNumber <= 0) {
+    toast.error("All fields should be filled correctly ❌");
     return;
   }
 
@@ -107,6 +113,7 @@ const handleAddOrder = async (e) => {
     const updated = await updateOrder(editingOrder._id, {
       product: editProduct,
       quantity: quantityNumber,
+      price: editPriceNumber,
       date: editDate,
       status: editStatus,
     });
@@ -142,13 +149,13 @@ const handleDeleteOrder = async (id) => {
 };
 
 
-  const pendingCount = orders.filter((o) => o.status === "Pending").length;
-  const completedCount = orders.filter((o) => o.status === "Completed").length;
-  const cancelledCount = orders.filter((o) => o.status === "Cancelled").length;
+  const pendingCount = orders.filter((o) => o.status === "pending").length;
+  const completedCount = orders.filter((o) => o.status === "completed").length;
+  const cancelledCount = orders.filter((o) => o.status === "cancel").length;
 
   // Filter + Search + Pagination
   const filteredOrders =
-    filter === "All" ? orders : orders.filter((o) => o.status === filter);
+    filter === "all" ? orders : orders.filter((o) => o.status === filter);
   const searchedOrders = filteredOrders.filter((order) => {
     const query = searchQuery.toLowerCase();
     return (
@@ -244,6 +251,16 @@ const handleDeleteOrder = async (id) => {
             />
           </div>
           <div>
+            <label className="block mb-1 font-medium">Price</label>
+            <input
+              type="text"
+              value={newPrice}
+              onChange={(e) => setNewPrice(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div>
             <label className="block mb-1 font-medium">Date</label>
             <input
               type="date"
@@ -308,6 +325,16 @@ const handleDeleteOrder = async (id) => {
             />
           </div>
           <div>
+            <label className="block mb-1 font-medium">Price</label>
+            <input
+              type="text"
+              value={editPrice}
+              onChange={(e) => setEditPrice(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div>
             <label className="block mb-1 font-medium">Date</label>
             <input
               type="date"
@@ -350,7 +377,7 @@ const handleDeleteOrder = async (id) => {
 
       {/* Filter Buttons */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {["All", "Pending", "Completed", "Cancelled"].map((status) => (
+        {["all", "pending", "complete", "cancel"].map((status) => (
           <button
             key={status}
             onClick={() => setFilter(status)}
@@ -360,7 +387,7 @@ const handleDeleteOrder = async (id) => {
                 : "bg-gray-200 hover:bg-gray-300"
             }`}
           >
-            {status}
+            <span className="capitalize">{status}</span>
           </button>
         ))}
       </div>
@@ -374,6 +401,7 @@ const handleDeleteOrder = async (id) => {
               <th className="p-3 text-left">Customer Id</th>
               <th className="p-3 text-left">Product</th>
               <th className="p-3 text-left">Quantity</th>
+              <th className="p-3 text-left">Price</th>
               <th className="p-3 text-left">Date</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Action</th>
@@ -384,14 +412,15 @@ const handleDeleteOrder = async (id) => {
               <tr key={order._id} className="border-b hover:bg-gray-50">
                 <td className="p-3">#{order._id}</td>
                 <td className="p-3 capitalize">{order.customerId?._id}</td>
-                <td className="p-3 capitalize">{order.product}</td>
+                <td className="p-3 capitalize max-w-[120px] overflow-hidden text-ellipsis whitespace-nowrap" title={order.product}>{order.product}</td>
                 <td className="p-3 capitalize">{order.quantity}</td>
+                <td className="p-3 capitalize">{order.price}</td>
                 <td className="p-3">{order.date}</td>
                 <td
                   className={`p-3 font-semibold ${
-                    order.status === "Pending"
+                    order.status === "pending"
                       ? "text-orange-600"
-                      : order.status === "Completed"
+                      : order.status === "complete"
                       ? "text-green-600"
                       : "text-red-600"
                   }`}
@@ -400,25 +429,25 @@ const handleDeleteOrder = async (id) => {
                 </td>
                 <td className="p-3 flex gap-2 items-center">
                   {/* Status buttons */}
-                  {order.status !== "Completed" && (
+                  {order.status !== "complete" && (
                     <button
-                      onClick={() => handleStatusChange(order._id, "Pending")}
+                      onClick={() => handleStatusChange(order._id, "pending")}
                       className="px-2 py-1 bg-orange-500 text-white rounded hover:bg-orange-600"
                     >
                       Pending
                     </button>
                   )}
-                  {order.status !== "Completed" && (
+                  {order.status !== "complete" && (
                     <button
-                      onClick={() => handleStatusChange(order._id, "Completed")}
+                      onClick={() => handleStatusChange(order._id, "complete")}
                       className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
                     >
                       Complete
                     </button>
                   )}
-                  {order.status !== "Cancelled" && (
+                  {order.status !== "cancel" && (
                     <button
-                      onClick={() => handleStatusChange(order._id, "Cancelled")}
+                      onClick={() => handleStatusChange(order._id, "cancel")}
                       className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                     >
                       Cancel
@@ -428,7 +457,7 @@ const handleDeleteOrder = async (id) => {
                   {/* Edit & Delete icons */}
                   <button
                     onClick={() => handleEditClick(order)}
-                    className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
                   >
                     <Edit size={16} />
                   </button>

@@ -30,10 +30,32 @@ const getOrders = async (req, res) => {
   }
 };
 
+// GET all orders (with optional status filter)
+const getFilterOrders = async (req, res) => {
+  try {
+    const { status } = req.query; // get status from query string
+
+    if (!status) {
+      return res.status(400).json({ message: "Status query parameter is required" });
+    }
+
+    // Fetch orders matching the status
+    const orders = await Order.find({ status: status });
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ message: `No orders found with status: ${status}` });
+    }
+
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 // Add new order
 const addOrder = async (req, res) => {
   try {
-    let { customerId, product, quantity, status, date, notes } = req.body;
+    let { customerId, product, quantity,price, status, date, notes } = req.body;
 
     if (date && date.includes("/")) {
       const [day, month, year] = date.split("/");
@@ -44,6 +66,7 @@ const addOrder = async (req, res) => {
       customerId,
       product,
       quantity,
+      price,
       status: status || "pending",
       date,
       notes,
@@ -77,7 +100,7 @@ const addOrder = async (req, res) => {
 const updateOrder = async (req, res) => {
   try {
     const orderId  = req.params.id;
-    let { product, quantity, status, date, notes } = req.body;
+    let { product, quantity, price, status, date, notes } = req.body;
 
     if (date && date.includes("/")) {
       const [day, month, year] = date.split("/");
@@ -91,6 +114,7 @@ const updateOrder = async (req, res) => {
 
     order.product = product !== undefined ? product : order.product;
     order.quantity = quantity !== undefined ? quantity : order.quantity;
+    order.price = price !== undefined ? price : order.price;
     order.status = status !== undefined ? status : order.status;
     order.date = date !== undefined ? date : order.date;
     order.notes = notes !== undefined ? notes : order.notes;
@@ -158,4 +182,23 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-module.exports = { getOrders, addOrder,updateOrder,deleteOrder,updateOrderStatus };
+// calculating today sale
+
+const getTodaySale = async (req, res) => {
+  const userId = req.user._id;
+
+  const today = new Date();
+  const startOfDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 0, 0, 0));
+  const endOfDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 23, 59, 59, 999));
+
+  const todayOrders = await Order.find({
+    customerId: userId,
+    createdAt: { $gte: startOfDay, $lte: endOfDay }
+  });
+
+  const totalSale = todayOrders.reduce((sum, order) => sum + (order.quantity * (order.price || 0)), 0);
+
+  res.json({ totalSale, orderCount: todayOrders.length });
+};
+
+module.exports = { getOrders, addOrder,updateOrder,deleteOrder,updateOrderStatus,getFilterOrders,getTodaySale};
