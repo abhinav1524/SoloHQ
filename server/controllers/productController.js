@@ -1,6 +1,7 @@
 // controllers/productController.js
 const Product = require("../models/Product.js");
 const { sendWhatsAppMessage } = require("../services/whatsappService.js");
+const { sendNotification } = require("../utils/notifications");
 // ✅ Create product
 const createProduct = async (req, res) => {
   try {
@@ -92,6 +93,13 @@ const checkLowInventory = async (req, res) => {
         await sendWhatsAppMessage(
           req.user.phone,
           `⚠️ Inventory Alert: Only ${product.stock} items left for ${product.name}. Restock soon!`
+        );
+
+       await sendNotification(
+          req.user._id,
+          `Inventory Alert: Only ${product.stock} items left for ${product.name}.`,
+          "stock",
+          req
         );
       }
     }

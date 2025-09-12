@@ -44,6 +44,22 @@ export default function Dashboard({ setIsSidebarOpen }) {
     fetchData();
   }, []);
 
+  // Get today's date in YYYY-MM-DD format
+const todayString = new Date().toISOString().split("T")[0];
+
+const todaysOrders = Array.isArray(orders)
+  ? orders.filter((o) => {
+      const orderDate = new Date(o.createdAt).toISOString().split("T")[0];
+      return orderDate === todayString;
+    })
+  : [];
+
+const todaysSale = todaysOrders.reduce(
+  (sum, o) => sum + (o.price || 0) * (o.quantity || 1),
+  0
+);
+
+
   return (
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
       {/* Header */}
@@ -67,10 +83,10 @@ export default function Dashboard({ setIsSidebarOpen }) {
       <div className="bg-white shadow-sm rounded-xl p-4 mb-6">
         <h2 className="text-sm text-gray-500">Today's Sales</h2>
         <p className="text-3xl font-bold text-gray-800 mt-1">
-          ₹
-          {Array.isArray(orders)
-            ? orders.reduce((sum, o) => sum + (o.totalPrice || 0), 0)
-            : 0}
+          ₹{todaysSale}
+        </p>
+        <p className="text-sm text-gray-600 mt-1">
+        {todaysOrders.length} order{todaysOrders.length !== 1 ? "s" : ""}
         </p>
       </div>
 

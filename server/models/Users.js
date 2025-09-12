@@ -11,6 +11,9 @@ const userSchema = new mongoose.Schema({
     enum: ["free", "monthly", "six-month", "yearly"],
     default: "free",
   },
+  googleId: { type: String }, // For Google OAuth
+  twoFactorEnabled: { type: Boolean, default: false }, // 2FA flag
+  otpSecret: { type: String }, // Temporary OTP for 2FA
   createdAt: { type: Date, default: Date.now },
 });
 

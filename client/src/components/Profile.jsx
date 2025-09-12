@@ -1,11 +1,13 @@
 import { useState,useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { useNavigate } from "react-router-dom";
 export default function Profile() {
   const [profilePic, setProfilePic] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const fileInputRef = useRef(null);
   const { setUser } = useAuth();
+  const navigate = useNavigate();
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -17,6 +19,7 @@ export default function Profile() {
   try {
     await api.post("/auth/logout");
     setUser(null); // clears context
+    navigate("/login")
   } catch (err) {
     console.error("Logout failed:", err.response?.data || err.message);
   }

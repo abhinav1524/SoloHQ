@@ -1,6 +1,7 @@
 const Order = require("../models/Order");
 const Customer = require("../models/Customer");
 const {sendWhatsAppMessage} = require("../services/whatsappService");
+const { sendNotification } = require("../utils/notifications");
 
 // format date
 const formatDate = (date) => {
@@ -83,6 +84,8 @@ const addOrder = async (req, res) => {
     // }
     // populate customer fields (adjust which fields you want)
     order = await order.populate("customerId");
+    // sending the pending order notification
+    await sendNotification(req.user._id, `You have a new pending order #${order._id}`, "order", req);
     // format date before sending response
     res.status(201).json({
       ...order.toObject(),
@@ -187,18 +190,22 @@ const updateOrderStatus = async (req, res) => {
 const getTodaySale = async (req, res) => {
   const userId = req.user._id;
 
-  const today = new Date();
-  const startOfDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 0, 0, 0));
-  const endOfDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), 23, 59, 59, 999));
+  const now = new Date();
+  const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
+  const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
 
   const todayOrders = await Order.find({
     customerId: userId,
-    createdAt: { $gte: startOfDay, $lte: endOfDay }
+    createdAt: { $gte: startOfDay, $lte: endOfDay }   // ✅ use createdAt instead of custom "date"
   });
 
-  const totalSale = todayOrders.reduce((sum, order) => sum + (order.quantity * (order.price || 0)), 0);
+  const totalSale = todayOrders.reduce(
+    (sum, order) => sum + (order.quantity * (order.price || 0)),
+    0
+  );
 
   res.json({ totalSale, orderCount: todayOrders.length });
 };
+
 
 module.exports = { getOrders, addOrder,updateOrder,deleteOrder,updateOrderStatus,getFilterOrders,getTodaySale};

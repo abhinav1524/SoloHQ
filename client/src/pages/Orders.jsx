@@ -74,6 +74,7 @@ const handleAddOrder = async (e) => {
     setOrders([newOrder, ...orders]);
 
     // Reset form
+    setNewId("");
     setNewProduct("");
     setNewQuantity("");
     setNewPrice("");
