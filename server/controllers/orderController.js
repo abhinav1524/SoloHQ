@@ -18,8 +18,8 @@ const getOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .sort({ createdAt: -1 })
-      .populate("customerId", "name phone email"); // populate customer details
-
+      .populate("customerId", "name phone email") // populate customer details
+      .populate("productId", "name price");
     const formattedOrders = orders.map((order) => ({
       ...order.toObject(),
       date: formatDate(order.date),
@@ -56,7 +56,7 @@ const getFilterOrders = async (req, res) => {
 // Add new order
 const addOrder = async (req, res) => {
   try {
-    let { customerId, product, quantity,price, status, date, notes } = req.body;
+    let { customerId, productId, quantity,price, status, date, notes } = req.body;
 
     if (date && date.includes("/")) {
       const [day, month, year] = date.split("/");
@@ -65,7 +65,7 @@ const addOrder = async (req, res) => {
 
     let order = await Order.create({
       customerId,
-      product,
+      productId,
       quantity,
       price,
       status: status || "pending",
@@ -83,7 +83,10 @@ const addOrder = async (req, res) => {
     //   );
     // }
     // populate customer fields (adjust which fields you want)
-    order = await order.populate("customerId");
+     order = await order.populate([
+      { path: "customerId", select: "name" },
+      { path: "productId", select: "name price" }
+    ]);
     // sending the pending order notification
     await sendNotification(req.user._id, `You have a new pending order #${order._id}`, "order", req);
     // format date before sending response
@@ -103,7 +106,7 @@ const addOrder = async (req, res) => {
 const updateOrder = async (req, res) => {
   try {
     const orderId  = req.params.id;
-    let { product, quantity, price, status, date, notes } = req.body;
+    let { productId, quantity, price, status, date, notes } = req.body;
 
     if (date && date.includes("/")) {
       const [day, month, year] = date.split("/");
@@ -115,7 +118,7 @@ const updateOrder = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    order.product = product !== undefined ? product : order.product;
+    order.productId = productId !== undefined ? productId : order.productId;
     order.quantity = quantity !== undefined ? quantity : order.quantity;
     order.price = price !== undefined ? price : order.price;
     order.status = status !== undefined ? status : order.status;
@@ -125,7 +128,8 @@ const updateOrder = async (req, res) => {
     await order.save();
 
     // ✅ Populate customer info
-    order = await order.populate("customerId");
+    await order.populate("customerId");
+    await order.populate("productId","name price");
     res.status(200).json({
       ...order.toObject(),
       date: formatDate(order.date),

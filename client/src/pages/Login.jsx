@@ -19,7 +19,7 @@ export default function Login() {
   const handleSubmit = async(e) => {
     e.preventDefault();
     setLoading(true);   
-    console.log("Login submitted:", form);
+    // console.log("Login submitted:", form);
     try {
         const res =await api.post("/auth/login",form)
         // console.log(res);

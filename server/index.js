@@ -32,16 +32,16 @@ const io = new Server(server, {
 app.set("io", io);
 // Socket.io setup
 io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
+  // console.log("A user connected:", socket.id);
 
   // Join room for user-specific notifications
   socket.on("joinRoom", (userId) => {
-    socket.join(userId);
-    console.log(`User ${userId} joined their notification room`);
+    socket.join(userId.toString());
+    // console.log(`User ${userId} joined their notification room`);
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    // console.log("User disconnected:", socket.id);
   });
 });
 
@@ -53,7 +53,20 @@ app.use("/api/campaigns", require("./routes/campaignRoutes"));
 app.use("/api/subscriptions", require("./routes/subscriptionRoutes"));
 app.use("/api/customers", require("./routes/customerRoutes"));
 app.use("/api/inventory", require("./routes/productRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
+
+app.get("/test-noti", (req, res) => {
+  const io = req.app.get("io");
+  io.to("68b67c0daa3fc2e00b176f87").emit("newNotification", {
+    id: Date.now(),
+    message: "🚀 Test notification",
+    type: "test",
+    read: false,
+    createdAt: new Date(),
+  });
+  res.send("Sent test notification");
+});
 
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

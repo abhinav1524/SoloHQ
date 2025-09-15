@@ -6,7 +6,11 @@ const orderSchema = new mongoose.Schema(  {
     ref: "Customer",   // references Customer model
     required: true,
   },
-    product: { type: String, required: true },
+    productId: { 
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",    // references Product model
+      required: true,
+    },
     quantity: { type: Number, required: true, default: 1 },
     status: {
       type: String,
