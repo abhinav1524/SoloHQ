@@ -11,6 +11,11 @@ const userSchema = new mongoose.Schema({
     enum: ["free", "monthly", "six-month", "yearly"],
     default: "free",
   },
+    profilePic: {
+    type: String, // store the URL of the profile image
+    default: "", // optional, user can skip uploading
+  },
+  profilePicPublicId: { type: String }, 
   googleId: { type: String }, // For Google OAuth
   twoFactorEnabled: { type: Boolean, default: false }, // 2FA flag
   otpSecret: { type: String }, // Temporary OTP for 2FA

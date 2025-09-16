@@ -62,22 +62,6 @@ const todaysSale = todaysOrders.reduce(
 
   return (
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-3">
-          <button
-            className="md:hidden p-2 rounded hover:bg-gray-200"
-            onClick={() => setIsSidebarOpen(true)}
-          >
-            <Menu size={20} />
-          </button>
-          <h1 className="text-2xl font-semibold text-gray-800">Welcome 👋</h1>
-        </div>
-        <div className="flex justify-around items-center">
-          <Profile />
-          <NotificationBell />
-        </div>
-      </div>
 
       {/* Today's Sales (Example: count total orders * price) */}
       <div className="bg-white shadow-sm rounded-xl p-4 mb-6">

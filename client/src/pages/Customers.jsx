@@ -134,7 +134,7 @@ const handleDeleteCustomer = async (id) => {
   return (
     <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="flex justify-between items-center gap-4 mb-4">
+      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-4">
         <button
           onClick={() => setShowAddForm(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700"
@@ -146,7 +146,7 @@ const handleDeleteCustomer = async (id) => {
           placeholder="Search by name, email, phone, address"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="border px-3 py-2 rounded-lg w-1/3"
+          className="w-full md:w-1/3 border px-3 py-2 rounded-lg"
         />
       </div>
 

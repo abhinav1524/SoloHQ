@@ -51,6 +51,8 @@ const sendTokenResponse = (user, statusCode, res) => {
       name: user.name,
       email: user.email,
       subscription: user.subscription,
+      profilePic: user.profilePic || null,
+      profilePicPublicId: user.profilePicPublicId || null,
     });
 };
 

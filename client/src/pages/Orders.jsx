@@ -190,8 +190,9 @@ const Orders = () => {
     const query = searchQuery.toLowerCase();
     return (
       order._id.toLowerCase().includes(query) ||
-      order.customerId?._id?.toLowerCase().includes(query) ||
-      order.productName?.toLowerCase().includes(query)
+      order.customerId?.name?.toLowerCase().includes(query) ||
+      order.productId?.name?.toLowerCase().includes(query)
+
     );
   });
 
@@ -227,7 +228,7 @@ const Orders = () => {
       </div>
 
       {/* Add New Order Button + Search */}
-      <div className="flex justify-between items-center gap-4 mb-4">
+      <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-4">
         <button
           onClick={() => setShowAddForm(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 cursor-pointer"
@@ -239,7 +240,7 @@ const Orders = () => {
           placeholder="Search by Order ID, Customer ID, or Product"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="border px-3 py-2 rounded-lg w-1/3"
+          className="w-full md:w-1/3 border px-3 py-2 rounded-lg"
         />
       </div>
 
@@ -432,7 +433,7 @@ const Orders = () => {
       </Modal>
 
       {/* Filter Buttons */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex gap-2 mb-4 overflow-x-auto flex-nowrap whitespace-nowrap">
         {["all", "pending", "completed", "cancel"].map((status) => (
           <button
             key={status}
@@ -449,8 +450,8 @@ const Orders = () => {
       </div>
 
       {/* Orders Table */}
-      <div className="overflow-x-auto bg-white rounded shadow">
-        <table className="min-w-full">
+      <div className="overflow-x-auto bg-white rounded shadow min-w-0">
+        <table className="min-w-[800px] sm:min-w-[1000px]">
           <thead className="bg-gray-200">
             <tr>
               <th className="p-3 text-left">Order Id</th>

@@ -11,7 +11,6 @@ router.post("/login",loginLimiter,validateLogin, login);
 router.get("/me", protect, (req, res) => {
   res.json({ user: req.user });
 });
-
 // routes for logout the user 
 // routes/authRoutes.js
 router.post("/logout", (req, res) => {

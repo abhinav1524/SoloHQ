@@ -12,6 +12,7 @@ import Customer from "./pages/Customers";
 import PageNotFound from "./pages/PageNotFound";
 import {useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Header from "./components/Header";
 import { Toaster } from "react-hot-toast";
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -23,9 +24,10 @@ function App() {
         // Layout with Sidebar (only for logged-in users)
         <div className="flex">
           <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-          <div className="flex-1 p-4">
+          <div className="flex-1 min-w-0 py-4 px-2">
+            <Header setIsSidebarOpen={setIsSidebarOpen} title="Welcome" /> 
             <Routes>
-              <Route path="/" element={<ProtectedRoute><Dashboard setIsSidebarOpen={setIsSidebarOpen} /></ProtectedRoute> } />
+              <Route path="/" element={<ProtectedRoute><Dashboard/></ProtectedRoute> } />
               <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
               <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
               <Route path="/marketing" element={<ProtectedRoute><MarketingPlanner /></ProtectedRoute>} />

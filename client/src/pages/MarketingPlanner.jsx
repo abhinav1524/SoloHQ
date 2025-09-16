@@ -42,7 +42,7 @@ const MarketingPlanner = () => {
   // ✅ Add or update campaign
   const addOrUpdateCampaign = async () => {
     if (!newCampaign.title || !newCampaign.startDate) {
-      toast.warning("Title and start date are required ⚠️");
+      toast.error("Title and start date are required");
       return;
     }
 

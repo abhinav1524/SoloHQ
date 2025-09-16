@@ -22,7 +22,7 @@ export default function Login() {
     // console.log("Login submitted:", form);
     try {
         const res =await api.post("/auth/login",form)
-        // console.log(res);
+        console.log(res);
         setUser(res.data); 
         navigate("/")
         toast.success(res.data.message || "login successfully! 🎉");
