@@ -169,7 +169,7 @@ const handleDeleteCustomer = async (id) => {
                 <td className="p-3">{cust._id}</td>
                 <td className="p-3">{cust.name}</td>
                 <td className="p-3">{cust.phone}</td>
-                <td className="p-3">{cust.email}</td>
+                <td className="p-3">{cust.email||"Not Given"}</td>
                 <td className="p-3">{cust.address}</td>
                 <td className="p-3 flex gap-2">
                   <button

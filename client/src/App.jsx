@@ -13,7 +13,11 @@ import PageNotFound from "./pages/PageNotFound";
 import {useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
+import Subscription from "./pages/Subscription";
 import { Toaster } from "react-hot-toast";
+import Sales from "./pages/Sales";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
@@ -25,13 +29,15 @@ function App() {
         <div className="flex">
           <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
           <div className="flex-1 min-w-0 py-4 px-2">
-            <Header setIsSidebarOpen={setIsSidebarOpen} title="Welcome" /> 
+            <Header setIsSidebarOpen={setIsSidebarOpen} title="Welcome" user={user} /> 
             <Routes>
               <Route path="/" element={<ProtectedRoute><Dashboard/></ProtectedRoute> } />
               <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
               <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
               <Route path="/marketing" element={<ProtectedRoute><MarketingPlanner /></ProtectedRoute>} />
               <Route path="/customer" element={<ProtectedRoute><Customer/></ProtectedRoute>} />
+              <Route path="/sales" element={<ProtectedRoute><Sales/></ProtectedRoute>} />
+              <Route path="/subscription" element={<ProtectedRoute allowedRoles={["admin"]}><Subscription/></ProtectedRoute>} />
               <Route path="/focus" element={<FocusMode />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
@@ -42,6 +48,8 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           {/* Default redirect if not logged in */}
           <Route path="*" element={<PageNotFound/>} />
         </Routes>

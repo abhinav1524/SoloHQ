@@ -1,7 +1,9 @@
-import { Home, ShoppingBag, Package, Megaphone, X } from "lucide-react";
+import { Home, ShoppingBag, Package, Megaphone, X,CreditCard,TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Sidebar({ isOpen, setIsOpen }) {
+  const { user } = useAuth(); 
   return (
     <>
       {/* Overlay - only for mobile */}
@@ -39,11 +41,23 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             <Package size={20} /> <span>Inventory</span>
           </Link>
           <Link to="/customer" className="flex items-center space-x-2 text-gray-600">
-            <Package size={20} /> <span>Customer</span>
+            <Package size={20} /> <span>Customers</span>
           </Link>
           <Link to="/marketing" className="flex items-center space-x-2 text-gray-600">
             <Megaphone size={20} /> <span>Marketing</span>
           </Link>
+          <Link to="/sales" className="flex items-center space-x-2 text-gray-600">
+            <TrendingUp size={20} /> <span>Sales</span>
+          </Link>
+         {user?.role === "admin" && (
+          <Link
+            to="/subscription"
+            className="flex items-center space-x-2 text-gray-600"
+          >
+            <CreditCard size={20} />
+            <span>Subscription</span>
+          </Link>
+          )}
         </nav>
       </aside>
     </>

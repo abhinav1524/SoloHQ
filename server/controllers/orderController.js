@@ -87,12 +87,21 @@ const addOrder = async (req, res) => {
       { path: "customerId", select: "name" },
       { path: "productId", select: "name price" }
     ]);
+
+    // Send WhatsApp alert only if feature is allowed
+    if (!req.featureRestricted && order.customerId.phone) {
+      await sendWhatsAppMessage(
+        order.customerId.phone,
+        `📦 Hi ${order.customerId.name}, your order #${order._id} has been placed successfully!`
+      );
+    }
     // sending the pending order notification
     await sendNotification(req.user._id, `You have a new pending order #${order._id}`, "order", req);
     // format date before sending response
     res.status(201).json({
       ...order.toObject(),
       date: formatDate(order.date),
+      featureMessage: req.featureRestricted ? req.featureMessage : null
     });
   } catch (error) {
     console.error("Order creation error:", error); // 👈 this will show the reason

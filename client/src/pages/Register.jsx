@@ -4,11 +4,12 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "../services/api";
-
+import { Eye, EyeOff } from "lucide-react"; // import icons
 export default function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -65,7 +66,7 @@ export default function Register() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Side (Brand/Illustration) */}
-      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-indigo-600 to-purple-600 items-center justify-center text-white p-12">
+      <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-indigo-600 to-pink-500 items-center justify-center text-white p-12">
         <div className="max-w-md text-center">
           <h1 className="text-4xl font-extrabold mb-4">Welcome 👋</h1>
           <p className="text-lg opacity-90">
@@ -96,7 +97,7 @@ export default function Register() {
                 value={form.name}
                 onChange={handleChange}
                 className={`w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition ${
-                  errors.name ? "border-red-500 focus:ring-red-500" : "focus:ring-indigo-500"
+                  errors.name ? "border-red-500 focus:ring-red-500" : "focus:ring-pink-500"
                 }`}
                 placeholder="John Doe"
               />
@@ -113,34 +114,39 @@ export default function Register() {
                 value={form.email}
                 onChange={handleChange}
                 className={`w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition ${
-                  errors.email ? "border-red-500 focus:ring-red-500" : "focus:ring-indigo-500"
+                  errors.email ? "border-red-500 focus:ring-red-500" : "focus:ring-pink-500"
                 }`}
                 placeholder="you@example.com"
               />
               {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
             </div>
 
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={form.password}
                 onChange={handleChange}
                 className={`w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition ${
-                  errors.password ? "border-red-500 focus:ring-red-500" : "focus:ring-indigo-500"
+                  errors.password ? "border-red-500 focus:ring-red-500" : "focus:ring-pink-500"
                 }`}
                 placeholder="••••••••"
               />
+              <button
+              type="button"
+              className="absolute right-3 bottom-4 text-black"
+              onClick={() => setShowPassword(!showPassword)}
+            >{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
               {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg font-semibold shadow-md hover:from-indigo-700 hover:to-purple-700 transition disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-indigo-500 to-pink-500 hover:opacity-90 text-white font-semibold py-3 rounded-xl transition-all duration-200 shadow-lg cursor-pointer"
             >
               {loading ? "Registering..." : "Register"}
             </button>

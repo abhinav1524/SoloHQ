@@ -93,7 +93,7 @@ const Orders = () => {
 
     try {
       const selectedProduct = products.find((p) => p._id === newProduct);
-      console.log(newProduct)
+      // console.log(selectedProduct)
       const newOrder = await createOrder({
         customerId: newId,
         productId: newProduct,
@@ -113,7 +113,15 @@ const Orders = () => {
       setNewDate(new Date().toISOString().slice(0, 10));
       setNewStatus("pending");
       setShowAddForm(false);
-      toast.success("Order added successfully 🎉");
+      // ✅ Check if the backend sent a feature restriction message
+      if (newOrder.featureMessage) {
+        setTimeout(() => {
+          toast.error(newOrder.featureMessage); // show warning
+        }, 2000);
+        toast.success("Order added successfully 🎉");
+      } else {
+        toast.success("Order added successfully 🎉");
+      }
     } catch (error) {
       console.error("Error adding order:", error);
       toast.error(error.response?.data?.message || "Unable to add order ❌");
@@ -154,7 +162,9 @@ const Orders = () => {
       });
 
       setOrders(
-        orders.map((order) => (order._id === editingOrder._id ? updated : order))
+        orders.map((order) =>
+          order._id === editingOrder._id ? updated : order
+        )
       );
 
       setShowEditForm(false);
@@ -192,7 +202,6 @@ const Orders = () => {
       order._id.toLowerCase().includes(query) ||
       order.customerId?.name?.toLowerCase().includes(query) ||
       order.productId?.name?.toLowerCase().includes(query)
-
     );
   });
 

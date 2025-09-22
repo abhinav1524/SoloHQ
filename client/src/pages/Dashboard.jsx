@@ -1,8 +1,5 @@
 import { useEffect, useState } from "react";
-import Profile from "../components/Profile";
 import { Link } from "react-router-dom";
-import { Menu } from "lucide-react";
-import NotificationBell from "./NotificationBell";
 import {
   getPendingOrders,
   getInventory,

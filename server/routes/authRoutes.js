@@ -1,5 +1,6 @@
 const express = require("express");
 const { register, login,validateLogin,validateRegister } = require("../controllers/authController");
+const {forgotPassword,resetPassword} = require("../controllers/passwordController")
 const loginLimiter =require("../middleware/loginLimiter");
 const {protect} =require("../middleware/authMiddleware");
 const router = express.Router();
@@ -21,5 +22,7 @@ router.post("/logout", (req, res) => {
   });
   res.json({ message: "Logged out successfully" });
 });
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
 
 module.exports = router;

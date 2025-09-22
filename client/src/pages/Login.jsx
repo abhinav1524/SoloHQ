@@ -5,11 +5,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import toast from "react-hot-toast";
-
+import { Eye, EyeOff } from "lucide-react"; // import icons
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const { setUser } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -22,7 +23,6 @@ export default function Login() {
     // console.log("Login submitted:", form);
     try {
         const res =await api.post("/auth/login",form)
-        console.log(res);
         setUser(res.data); 
         navigate("/")
         toast.success(res.data.message || "login successfully! 🎉");
@@ -69,7 +69,7 @@ export default function Login() {
           {/* Password */}
           <div className="relative">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               value={form.password}
               onChange={handleChange}
@@ -83,6 +83,11 @@ export default function Login() {
             >
               Password
             </label>
+            <button
+              type="button"
+              className="absolute right-3 top-4 text-white"
+              onClick={() => setShowPassword(!showPassword)}
+            >{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
           </div>
 
           {/* Submit */}
@@ -94,9 +99,12 @@ export default function Login() {
             {loading ? "logging in..." : "Sign In"}
           </button>
         </form>
-
-        {/* Footer Links */}
+        {/* forgot password route */}
         <div className="mt-6 text-center text-gray-300 text-sm">
+          <Link to="/forgot-password">forgot password</Link>
+        </div>
+        {/* Footer Links */}
+        <div className="mt-4 text-center text-gray-300 text-sm">
           Don’t have an account?{" "}
           <Link
             to="/register"

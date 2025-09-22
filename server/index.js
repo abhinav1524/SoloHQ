@@ -53,6 +53,7 @@ app.use("/api/campaigns", require("./routes/campaignRoutes"));
 app.use("/api/subscriptions", require("./routes/subscriptionRoutes"));
 app.use("/api/customers", require("./routes/customerRoutes"));
 app.use("/api/inventory", require("./routes/productRoutes"));
+app.use("/api/sales", require("./routes/salesRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
 

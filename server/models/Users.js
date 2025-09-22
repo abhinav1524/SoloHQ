@@ -8,14 +8,23 @@ const userSchema = new mongoose.Schema({
   role: { type: String, default: "user" },
   subscription: {
     type: String,
-    enum: ["free", "monthly", "six-month", "yearly"],
-    default: "free",
+    enum: ["trial", "free", "monthly", "six-month", "yearly"],
+    default: "trial",
   },
-    profilePic: {
+  trialEndDate: {
+  type: Date,
+  default: function () {
+    return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // ✅ 7 days from signup
+  },
+},
+  planEndDate: { type: Date },
+  profilePic: {
     type: String, // store the URL of the profile image
     default: "", // optional, user can skip uploading
   },
-  profilePicPublicId: { type: String }, 
+  profilePicPublicId: { type: String },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   googleId: { type: String }, // For Google OAuth
   twoFactorEnabled: { type: Boolean, default: false }, // 2FA flag
   otpSecret: { type: String }, // Temporary OTP for 2FA
