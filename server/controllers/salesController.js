@@ -3,21 +3,30 @@ const Order = require("../models/Order");
 
 const getSalesData = async (req, res) => {
   try {
+    console.log(req.user._id)
     const { filter } = req.query;
 
-    const today = new Date();
-    let startDate;
-    if (filter === "daily") {
-      startDate = new Date(today.setHours(0, 0, 0, 0));
-    } else if (filter === "weekly") {
-      startDate = new Date(today.setDate(today.getDate() - 7));
-    } else {
-      startDate = new Date(today.setMonth(today.getMonth() - 1));
-    }
+   const today = new Date();
+let startDate;
+if (filter === "daily") {
+  startDate = new Date(today);
+  console.log(startDate)
+  startDate.setHours(0, 0, 0, 0);
+} else if (filter === "weekly") {
+  startDate = new Date();
+  startDate.setDate(today.getDate() - 7);
+} else {
+  startDate = new Date();
+  startDate.setMonth(today.getMonth() - 1);
+}
 
-    const orders = await Order.find({ createdAt: { $gte: startDate } })
+    // ✅ Filter by logged-in user
+    const orders = await Order.find({
+      userId: req.user._id,
+      date: { $gte: startDate },
+    })
       .populate("productId")
-      .populate("customerId");
+      console.log(orders);
 
     // Calculate metrics
     const totalRevenue = orders.reduce((sum, o) => sum + o.price * o.quantity, 0);
@@ -50,5 +59,6 @@ const getSalesData = async (req, res) => {
     res.status(500).json({ message: "Error fetching sales data" });
   }
 };
+
 
 module.exports=getSalesData;

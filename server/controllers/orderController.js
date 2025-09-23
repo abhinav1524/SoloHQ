@@ -64,6 +64,7 @@ const addOrder = async (req, res) => {
     }
 
     let order = await Order.create({
+      userId:req.user._id,
       customerId,
       productId,
       quantity,

@@ -12,7 +12,7 @@ export default function ProtectedRoute({ children,allowedRoles = [] }) {
   }
   // Logged in but role is not allowed → redirect to dashboard
     if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
