@@ -3,7 +3,6 @@ const Order = require("../models/Order");
 
 const getSalesData = async (req, res) => {
   try {
-    console.log(req.user._id)
     const { filter } = req.query;
 
    const today = new Date();
@@ -26,7 +25,6 @@ if (filter === "daily") {
       date: { $gte: startDate },
     })
       .populate("productId")
-      console.log(orders);
 
     // Calculate metrics
     const totalRevenue = orders.reduce((sum, o) => sum + o.price * o.quantity, 0);
