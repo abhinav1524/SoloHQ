@@ -6,7 +6,7 @@ const getCampaigns = async (req, res) => {
 };
 
 const addCampaign = async (req, res) => {
-  const { title, description, channel, startDate, endDate } = req.body;
+  const { title, description, channel, startDate, endDate,reminderTime,} = req.body;
   const campaign = await Campaign.create({
     user: req.user._id,
     title,
@@ -14,6 +14,7 @@ const addCampaign = async (req, res) => {
     channel,
     startDate,
     endDate,
+    reminderTime,
   });
   res.status(201).json(campaign);
 };

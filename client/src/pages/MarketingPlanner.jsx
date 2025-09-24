@@ -16,6 +16,7 @@ const MarketingPlanner = () => {
     channel: "WhatsApp",
     startDate: "",
     endDate: "",
+    reminderTime: "",
   });
   const [editingId, setEditingId] = useState(null);
 
@@ -69,6 +70,7 @@ const MarketingPlanner = () => {
         channel: "WhatsApp",
         startDate: "",
         endDate: "",
+        reminderTime: "",
       });
     } catch (error) {
       toast.error(error.response?.data?.message || "Unable to save campaign ❌");
@@ -86,6 +88,9 @@ const MarketingPlanner = () => {
       channel: campaign.channel,
       startDate: campaign.startDate?.split("T")[0] || "",
       endDate: campaign.endDate?.split("T")[0] || "",
+       reminderTime: campaign.reminderTime
+    ? campaign.reminderTime.slice(0, 16)
+    : "",     
     });
     setEditingId(id);
   };
@@ -148,6 +153,14 @@ const MarketingPlanner = () => {
             onChange={handleChange}
             className="p-2 border rounded"
           />
+          <input
+            type="time"
+            name="reminderTime"
+            value={newCampaign.reminderTime}
+            onChange={handleChange}
+            className="p-2 border rounded"
+          />
+
           <textarea
             name="description"
             placeholder="Campaign Details / Notes"
@@ -182,6 +195,9 @@ const MarketingPlanner = () => {
               <p className="text-sm text-gray-600">{c.description}</p>
               <p className="text-xs text-gray-500">
                 {c.startDate?.split("T")[0]} → {c.endDate?.split("T")[0]}
+              </p>
+               <p className="text-xs text-gray-500">
+                time is {c.reminderTime}
               </p>
             </div>
             <div className="flex gap-2 mt-2 md:mt-0">

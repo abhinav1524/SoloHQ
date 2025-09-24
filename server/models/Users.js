@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
+  phone: { type: String, required: true },
   password: String,
   role: { type: String, default: "user" },
   subscription: {
@@ -29,6 +30,7 @@ const userSchema = new mongoose.Schema({
   twoFactorEnabled: { type: Boolean, default: false }, // 2FA flag
   otpSecret: { type: String }, // Temporary OTP for 2FA
   createdAt: { type: Date, default: Date.now },
+  timezone: { type: String, default: "UTC" }
 });
 
 userSchema.pre("save", async function (next) {

@@ -8,6 +8,10 @@ const campaignSchema = new mongoose.Schema({
   startDate: Date,
   endDate: Date,
   createdAt: { type: Date, default: Date.now },
+  reminderTime: {
+  type: String, // store as "HH:mm"
+  required: true,
+},
 });
 
 module.exports = mongoose.model("Campaign", campaignSchema);

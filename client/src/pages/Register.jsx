@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import api from "../services/api";
 import { Eye, EyeOff } from "lucide-react"; // import icons
 export default function Register() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "",phone:"", password: "",timezone: Intl.DateTimeFormat().resolvedOptions().timeZone });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -54,7 +54,7 @@ export default function Register() {
     try {
       const res = await api.post("/auth/register", form);
       toast.success(res.data.message || "Registered successfully! 🎉");
-      setForm({ name: "", email: "", password: "" });
+      setForm({ name: "", email: "", phone: "" , password: "" });
       navigate("/login");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed ❌");
@@ -119,6 +119,23 @@ export default function Register() {
                 placeholder="you@example.com"
               />
               {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+            </div>
+
+             <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Phone No
+              </label>
+              <input
+                type="text"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                className={`w-full mt-1 px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none transition ${
+                  errors.name ? "border-red-500 focus:ring-red-500" : "focus:ring-pink-500"
+                }`}
+                placeholder="91********"
+              />
+              {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
             </div>
 
             <div className="relative">
