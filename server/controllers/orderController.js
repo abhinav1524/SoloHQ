@@ -1,6 +1,6 @@
 const Order = require("../models/Order");
 const Customer = require("../models/Customer");
-const {sendWhatsAppMessage} = require("../services/whatsappService");
+const { sendWhatsAppMessage } = require("../services/whatsappService");
 const { sendNotification } = require("../utils/notifications");
 
 // format date
@@ -37,14 +37,18 @@ const getFilterOrders = async (req, res) => {
     const { status } = req.query; // get status from query string
 
     if (!status) {
-      return res.status(400).json({ message: "Status query parameter is required" });
+      return res
+        .status(400)
+        .json({ message: "Status query parameter is required" });
     }
 
     // Fetch orders matching the status
     const orders = await Order.find({ status: status });
 
     if (!orders || orders.length === 0) {
-      return res.status(404).json({ message: `No orders found with status: ${status}` });
+      return res
+        .status(404)
+        .json({ message: `No orders found with status: ${status}` });
     }
 
     res.status(200).json(orders);
@@ -56,7 +60,9 @@ const getFilterOrders = async (req, res) => {
 // Add new order
 const addOrder = async (req, res) => {
   try {
-    let { customerId, productId, quantity,price, status, date, notes } = req.body;
+    // console.log(req);
+    let { customerId, productId, quantity, price, status, date, notes } =
+      req.body;
 
     if (date && date.includes("/")) {
       const [day, month, year] = date.split("/");
@@ -64,7 +70,7 @@ const addOrder = async (req, res) => {
     }
 
     let order = await Order.create({
-      userId:req.user._id,
+      userId: req.user._id,
       customerId,
       productId,
       quantity,
@@ -84,25 +90,30 @@ const addOrder = async (req, res) => {
     //   );
     // }
     // populate customer fields (adjust which fields you want)
-     order = await order.populate([
-      { path: "customerId", select: "name" },
-      { path: "productId", select: "name price" }
+    order = await order.populate([
+      { path: "customerId", select: "name phone email" },
+      { path: "productId", select: "name price" },
     ]);
 
     // Send WhatsApp alert only if feature is allowed
     if (!req.featureRestricted && order.customerId.phone) {
       await sendWhatsAppMessage(
         order.customerId.phone,
-        `📦 Hi ${order.customerId.name}, your order #${order._id} has been placed successfully!`
+        `📦 Hi ${order.customerId.name}, your order #${order._id} has been placed successfully! status:${order.status}`
       );
     }
     // sending the pending order notification
-    await sendNotification(req.user._id, `You have a new pending order #${order._id}`, "order", req);
+    await sendNotification(
+      req.user._id,
+      `You have a new pending order #${order._id}`,
+      "order",
+      req
+    );
     // format date before sending response
     res.status(201).json({
       ...order.toObject(),
       date: formatDate(order.date),
-      featureMessage: req.featureRestricted ? req.featureMessage : null
+      featureMessage: req.featureRestricted ? req.featureMessage : null,
     });
   } catch (error) {
     console.error("Order creation error:", error); // 👈 this will show the reason
@@ -115,7 +126,7 @@ const addOrder = async (req, res) => {
 // Update Order
 const updateOrder = async (req, res) => {
   try {
-    const orderId  = req.params.id;
+    const orderId = req.params.id;
     let { productId, quantity, price, status, date, notes } = req.body;
 
     if (date && date.includes("/")) {
@@ -137,23 +148,31 @@ const updateOrder = async (req, res) => {
 
     await order.save();
 
+    if (order.customerId?.phone) {
+      await sendWhatsAppMessage(
+        order.customerId.phone,
+        `✅ Hi ${order.customerId.name}, your order #${order._id} status has been updated to *${order.status}*`
+      );
+    }
     // ✅ Populate customer info
     await order.populate("customerId");
-    await order.populate("productId","name price");
+    await order.populate("productId", "name price");
     res.status(200).json({
       ...order.toObject(),
       date: formatDate(order.date),
     });
   } catch (error) {
     console.error("Order update error:", error);
-    res.status(500).json({ message: "Error updating order", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error updating order", error: error.message });
   }
 };
 
 // Delete Order
 const deleteOrder = async (req, res) => {
   try {
-    const orderId  = req.params.id;
+    const orderId = req.params.id;
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
@@ -164,10 +183,11 @@ const deleteOrder = async (req, res) => {
     res.status(200).json({ message: "Order deleted successfully" });
   } catch (error) {
     console.error("Order deletion error:", error);
-    res.status(500).json({ message: "Error deleting order", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting order", error: error.message });
   }
 };
-
 
 // Update order status
 const updateOrderStatus = async (req, res) => {
@@ -205,21 +225,40 @@ const getTodaySale = async (req, res) => {
   const userId = req.user._id;
 
   const now = new Date();
-  const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
-  const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
+  const startOfDay = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0)
+  );
+  const endOfDay = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      23,
+      59,
+      59,
+      999
+    )
+  );
 
   const todayOrders = await Order.find({
     customerId: userId,
-    createdAt: { $gte: startOfDay, $lte: endOfDay }   // ✅ use createdAt instead of custom "date"
+    createdAt: { $gte: startOfDay, $lte: endOfDay }, // ✅ use createdAt instead of custom "date"
   });
 
   const totalSale = todayOrders.reduce(
-    (sum, order) => sum + (order.quantity * (order.price || 0)),
+    (sum, order) => sum + order.quantity * (order.price || 0),
     0
   );
 
   res.json({ totalSale, orderCount: todayOrders.length });
 };
 
-
-module.exports = { getOrders, addOrder,updateOrder,deleteOrder,updateOrderStatus,getFilterOrders,getTodaySale};
+module.exports = {
+  getOrders,
+  addOrder,
+  updateOrder,
+  deleteOrder,
+  updateOrderStatus,
+  getFilterOrders,
+  getTodaySale,
+};

@@ -12,6 +12,7 @@ const campaignSchema = new mongoose.Schema({
   type: String, // store as "HH:mm"
   required: true,
 },
+reminderSent: { type: Boolean, default: false } // new flag
 });
 
 module.exports = mongoose.model("Campaign", campaignSchema);
