@@ -12,6 +12,7 @@ const createProduct = async (req, res) => {
     }
 
     const product = new Product({
+      userId:req.user._id,
       name,
       description,
       price,
@@ -30,7 +31,7 @@ const createProduct = async (req, res) => {
 // ✅ Get all products
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find({userId:req.user._id});
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: "Error fetching products", error: error.message });

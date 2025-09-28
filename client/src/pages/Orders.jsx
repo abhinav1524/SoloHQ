@@ -30,6 +30,7 @@ const Orders = () => {
     new Date().toISOString().slice(0, 10)
   );
   const [newStatus, setNewStatus] = useState("pending");
+  const [isAdding, setIsAdding] = useState(false);
 
   const [editQuantity, setEditQuantity] = useState("");
   const [editPrice, setEditPrice] = useState("");
@@ -73,9 +74,18 @@ const Orders = () => {
     );
   };
 
+const handleProductChange = (productId, setProduct, setPrice) => {
+    setProduct(productId);
+    const selected = products.find((p) => p._id === productId);
+    setPrice(selected ? selected.price : "");
+  };
+
+
   // Add Order
   const handleAddOrder = async (e) => {
     e.preventDefault();
+    if (isAdding) return; // prevent multiple clicks
+    setIsAdding(true);
 
     const quantityNumber = Number(newQuantity);
     const newPriceNumber = Number(newPrice);
@@ -88,6 +98,7 @@ const Orders = () => {
       quantityNumber <= 0
     ) {
       toast.error("All fields should be filled correctly ❌");
+      setIsAdding(false);
       return;
     }
 
@@ -115,17 +126,16 @@ const Orders = () => {
       setShowAddForm(false);
       // ✅ Check if the backend sent a feature restriction message
       if (newOrder.featureMessage) {
-        setTimeout(() => {
           toast.error(newOrder.featureMessage); // show warning
-        }, 2000);
-        toast.success("Order added successfully 🎉");
       } else {
         toast.success("Order added successfully 🎉");
       }
     } catch (error) {
       console.error("Error adding order:", error);
       toast.error(error.response?.data?.message || "Unable to add order ❌");
-    }
+    }finally {
+    setIsAdding(false); // enable button again
+  }
   };
 
   // Edit Order
@@ -277,7 +287,7 @@ const Orders = () => {
             <label className="block mb-1 font-medium">Product</label>
             <select
               value={newProduct}
-              onChange={(e) => setNewProduct(e.target.value)}
+              onChange={(e) =>  handleProductChange(e.target.value, setNewProduct, setNewPrice)}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
             >
@@ -308,6 +318,7 @@ const Orders = () => {
               type="number"
               value={newPrice}
               onChange={(e) => setNewPrice(e.target.value)}
+              disabled={!newProduct}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
             />
@@ -348,9 +359,14 @@ const Orders = () => {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              disabled={isAdding}
+             className={`px-4 py-2 rounded text-white ${
+                isAdding
+                  ? "bg-green-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700"
+              }`}
             >
-              Add Order
+              {isAdding ? "Adding..." : "Add Order"}
             </button>
           </div>
         </form>
@@ -363,7 +379,7 @@ const Orders = () => {
             <label className="block mb-1 font-medium">Product</label>
             <select
               value={editProduct}
-              onChange={(e) => setEditProduct(e.target.value)}
+              onChange={(e) =>  handleProductChange(e.target.value, setNewProduct, setNewPrice)}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
             >
@@ -393,6 +409,7 @@ const Orders = () => {
               type="number"
               value={editPrice}
               onChange={(e) => setEditPrice(e.target.value)}
+              disabled={!editProduct}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
             />

@@ -1,5 +1,5 @@
 const Order = require("../models/Order");
-const Customer = require("../models/Customer");
+const Product = require("../models/Product");
 const { sendWhatsAppMessage } = require("../services/whatsappService");
 const { sendNotification } = require("../utils/notifications");
 
@@ -16,7 +16,7 @@ const formatDate = (date) => {
 // Get all orders
 const getOrders = async (req, res) => {
   try {
-    const orders = await Order.find()
+    const orders = await Order.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
       .populate("customerId", "name phone email") // populate customer details
       .populate("productId", "name price");
@@ -69,6 +69,16 @@ const addOrder = async (req, res) => {
       date = new Date(`${year}-${month}-${day}`);
     }
 
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    
+    // 2️⃣ Check if enough stock
+    if (product.stock < quantity) {
+      return res.status(400).json({ message: "Not enough stock available" });
+    }
+
     let order = await Order.create({
       userId: req.user._id,
       customerId,
@@ -79,29 +89,34 @@ const addOrder = async (req, res) => {
       date,
       notes,
     });
+    // 4️⃣ Reduce product stock
+    product.stock -= quantity;
+    await product.save();
 
-    // Find customer to get details for WhatsApp notification
-    // const customer = await Customer.findById(customerId);
-
-    // if (customer && customer.phone) {
-    //   await sendWhatsAppMessage(
-    //     customer.phone,
-    //     `📦 Hi ${customer.name}, your order for ${quantity} x ${product} has been placed successfully!`
-    //   );
-    // }
-    // populate customer fields (adjust which fields you want)
     order = await order.populate([
       { path: "customerId", select: "name phone email" },
       { path: "productId", select: "name price" },
+      { path: "userId", select: "name phone" },
     ]);
 
     // Send WhatsApp alert only if feature is allowed
     if (!req.featureRestricted && order.customerId.phone) {
       await sendWhatsAppMessage(
-        order.customerId.phone,
-        `📦 Hi ${order.customerId.name}, your order #${order._id} has been placed successfully! status:${order.status}`
+        `+91${order.customerId.phone}`,
+        `Hi ${order.customerId.name}, your order 📦 ${order.productId.name} whose orderid is #${order._id} has been placed successfully!`
       );
     }
+
+    // 7️⃣ WhatsApp alert to user if stock is running low
+    if (product.stock <= 5 && order.userId?.phone) {
+      await sendWhatsAppMessage(
+        `+91${order.userId.phone}`,
+        product.stock === 0
+          ? `🚨 Hi ${order.userId.name}, "${product.name}" is OUT OF STOCK! Please restock immediately.`
+          : `⚠️ Hi ${order.userId.name}, stock for "${product.name}" is running low. Only ${product.stock} left!`
+      );
+    }
+
     // sending the pending order notification
     await sendNotification(
       req.user._id,

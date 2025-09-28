@@ -1,4 +1,4 @@
-import { Home, ShoppingBag, Package, Megaphone, X,CreditCard,TrendingUp } from "lucide-react";
+import { Home, ShoppingBag, Package, Megaphone, X,CreditCard,TrendingUp ,Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -48,6 +48,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           </Link>
           <Link to="/sales" className="flex items-center space-x-2 text-gray-600">
             <TrendingUp size={20} /> <span>Sales</span>
+          </Link>
+          <Link to="/generate-captions" className="flex items-center space-x-2 text-gray-600">
+            <Cpu size={20}/> <span>Gen Ai Captions</span>
           </Link>
          {user?.role === "admin" && (
           <Link

@@ -1,8 +1,18 @@
-// jobs/campaignReminderJob.js
+// jobs/campaignReminder.js
 const cron = require("node-cron");
 const Campaign = require("../models/Campaign");
 const { sendWhatsAppMessage } = require("../services/whatsappService");
 const moment = require("moment-timezone");
+
+// Helper: check if user can use WhatsApp alerts
+const canUseWhatsApp = (user) => {
+  if (!user) return false;
+
+  const now = new Date();
+
+  // Trial users within trial period
+  return user.subscription === "trial" && user.trialEndDate && user.trialEndDate > now;
+};
 
 // Run every minute
 cron.schedule("* * * * *", async () => {
@@ -11,14 +21,12 @@ cron.schedule("* * * * *", async () => {
 
     const now = new Date();
 
-    // Fetch all campaigns with reminderTime
-    const campaigns = await Campaign.find({
-      reminderTime: { $exists: true },
-    }).populate("user", "phone name email timezone");
+    // Fetch all campaigns with a reminderTime
+    const campaigns = await Campaign.find({ reminderTime: { $exists: true } })
+      .populate("user", "phone name email timezone subscription trialEndDate");
 
     for (const campaign of campaigns) {
       const user = campaign.user;
-
       if (!user?.phone) {
         console.log(`⚠️ Skipping campaign "${campaign.title}" → user has no phone`);
         continue;
@@ -39,36 +47,31 @@ cron.schedule("* * * * *", async () => {
       // Debug logs
       console.log("📌 Campaign:", campaign.title);
       console.log("   User:", user.name, "| Phone:", user.phone, "| TZ:", userTimezone);
+      console.log("   Subscription:", user.subscription, "| TrialEnd:", user.trialEndDate,);
       console.log("   Now (User TZ):", nowUserTz.format("YYYY-MM-DD HH:mm:ss"));
       console.log("   Reminder (User TZ):", reminderMoment.format("YYYY-MM-DD HH:mm:ss"));
       console.log("   Diff (ms):", diff);
-      console.log("   Reminder sent already:", campaign.reminderSent);
 
-      // Only send reminder if not sent and within 5 min window
-      if (!campaign.reminderSent && diff >= 0 && diff <= 5 * 60 * 1000) {
-        const message = `📢 Reminder: Your campaign "${campaign.title}" starts today on ${campaign.channel}! 
-Don't forget to create your post to advertise 🚀.`;
-
-        try {
-          const response = await sendWhatsAppMessage(user.phone, message);
-          console.log(
-            `✅ Reminder sent to ${user.phone}, SID: ${response?.sid || "N/A"}, Status: ${response?.status || "N/A"}`
-          );
-
-          // Mark as sent
-          campaign.reminderSent = true;
-          await campaign.save();
-        } catch (sendErr) {
-          console.error("❌ Failed to send WhatsApp message:", sendErr.message);
+      // Check if reminder is due (1 min tolerance)
+      if (diff >= 0 && diff <= 60000) {
+        if (canUseWhatsApp(user)) {
+          const message = `📢 Reminder: Your campaign "${campaign.title}" starts today on ${campaign.channel}!
+          Don't forget to create your post to advertise 🚀.`;
+          try {
+            await sendWhatsAppMessage(`+91${user.phone}`, message);
+            console.log("✅ Reminder sent to", user.phone);
+          } catch (sendErr) {
+            console.error("❌ Failed to send WhatsApp message:", sendErr.message);
+          }
+        } else {
+          console.log(`⚠️ WhatsApp alert blocked → user "${user.name}" is not trial or paid subscriber`);
         }
-      } else if (campaign.reminderSent) {
-        console.log("⏭️ Skipping → reminder already sent");
       } else {
-        console.log("⏭️ Not sending reminder → diff not in range");
+        console.log("⏭️ Not sending reminder (diff not in range)");
       }
     }
 
-    console.log("✅ Campaign reminders checked successfully.\n");
+    // console.log("✅ Campaign reminders checked successfully.\n");
   } catch (error) {
     console.error("❌ Error in Campaign Reminder Job:", error.message);
   }

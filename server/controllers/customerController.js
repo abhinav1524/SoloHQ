@@ -8,7 +8,7 @@ const addCustomer = async (req, res) => {
   try {
     const { name, phone,email, address, notes } = req.body;
 
-    const customer = await Customer.create({ name, phone, email, address, notes });
+    const customer = await Customer.create({ userId:req.user._id,name, phone, email, address, notes });
     res.status(201).json({message: "Customer added successfully! 🎉",customer});
   } catch (error) {
     res.status(500).json({ message: "Error adding customer", error });
@@ -19,7 +19,7 @@ const addCustomer = async (req, res) => {
 // @route   GET /api/customers
 const getCustomers = async (req, res) => {
   try {
-    const customers = await Customer.find();
+    const customers = await Customer.find({userId:req.user._id});
     res.json(customers);
   } catch (error) {
     res.status(500).json({ message: "Error fetching customers", error });
