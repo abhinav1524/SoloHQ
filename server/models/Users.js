@@ -1,5 +1,16 @@
+// userSchema.js
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+
+const subscriptionSchema = new mongoose.Schema({
+  planName: String,             // e.g. "Basic-1M"
+  price: Number,                // e.g. 199
+  durationInMonths: Number,     // e.g. 1
+  features: [String],           // ["AI Suggestions", "WhatsApp Alerts"]
+  startDate: Date,              // when user subscribed
+  endDate: Date,                // when subscription ends
+  status: { type: String, enum: ["active", "expired"], default: "active" },
+});
 
 const userSchema = new mongoose.Schema({
   name: String,
@@ -7,30 +18,22 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   password: String,
   role: { type: String, default: "user" },
-  subscription: {
-    type: String,
-    enum: ["trial", "free", "monthly", "six-month", "yearly"],
-    default: "trial",
-  },
+  subscription: subscriptionSchema,  // <-- NEW SUBDOCUMENT
   trialEndDate: {
-  type: Date,
-  default: function () {
-    return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // ✅ 7 days from signup
+    type: Date,
+    default: function () {
+      return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days trial
+    },
   },
-},
-  planEndDate: { type: Date },
-  profilePic: {
-    type: String, // store the URL of the profile image
-    default: "", // optional, user can skip uploading
-  },
+  profilePic: { type: String, default: "" },
   profilePicPublicId: { type: String },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
-  googleId: { type: String }, // For Google OAuth
-  twoFactorEnabled: { type: Boolean, default: false }, // 2FA flag
-  otpSecret: { type: String }, // Temporary OTP for 2FA
+  googleId: { type: String },
+  twoFactorEnabled: { type: Boolean, default: false },
+  otpSecret: String,
   createdAt: { type: Date, default: Date.now },
-  timezone: { type: String, default: "UTC" }
+  timezone: { type: String, default: "UTC" },
 });
 
 userSchema.pre("save", async function (next) {

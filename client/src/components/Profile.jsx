@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function Profile() {
   const { user, setUser } = useAuth();
@@ -87,6 +88,7 @@ export default function Profile() {
           >
             Upload Picture
           </button>
+          <Link to="/billing" className="block w-full text-left px-4 py-2 hover:bg-gray-100">Billing</Link>
           <button
             className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600 cursor-pointer"
             onClick={logout}

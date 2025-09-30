@@ -10,7 +10,7 @@ const {protect,restrictTo} =require("../middleware/authMiddleware.js")
 const router = express.Router();
 
 // Public Routes
-router.get("/",protect, restrictTo("admin"), getSubscriptions);
+router.get("/",protect, getSubscriptions);
 router.get("/:id",protect, restrictTo("admin"), getSubscriptionById);
 
 // Admin Routes (later we’ll secure with middleware)

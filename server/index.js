@@ -57,6 +57,7 @@ app.use("/api/sales", require("./routes/salesRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/marketing", require("./routes/marketingRoutes"));
+app.use("/api/payment", require("./routes/paymentRoutes"));
 
 app.get("/test-noti", (req, res) => {
   const io = req.app.get("io");

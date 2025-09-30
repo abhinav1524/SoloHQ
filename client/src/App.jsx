@@ -20,6 +20,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import GenerateCaption from "./pages/GenerateCaption";
 import Plans from "./pages/Plans";
+import BillingInfo from "./pages/Billing";
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
@@ -41,6 +42,7 @@ function App() {
               <Route path="/sales" element={<ProtectedRoute><Sales/></ProtectedRoute>} />
               <Route path="/generate-captions" element={<ProtectedRoute><GenerateCaption/></ProtectedRoute>} />
               <Route path="/plans" element={<ProtectedRoute><Plans/></ProtectedRoute>} />
+              <Route path="/billing" element={<ProtectedRoute><BillingInfo/></ProtectedRoute>} />
               <Route path="/subscription" element={<ProtectedRoute allowedRoles={["admin"]}><Subscription/></ProtectedRoute>} />
               <Route path="/focus" element={<FocusMode />} />
               <Route path="*" element={<Navigate to="/" />} />
