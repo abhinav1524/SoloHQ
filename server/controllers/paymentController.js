@@ -12,7 +12,7 @@ const razorpay = new Razorpay({
 // Create Razorpay Order
 exports.createOrder = async (req, res) => {
   try {
-    const { userId, subscriptionPlan, price,features } = req.body;
+    const { userId, subscriptionPlan, price,features,durationInMonths } = req.body;
 
     const options = {
       amount: price * 100, // in paise
@@ -34,6 +34,7 @@ exports.createOrder = async (req, res) => {
       razorpayOrderId: order.id,
       price,
       features: features,
+      durationInMonths:durationInMonths,
       status: "pending",
     });
 

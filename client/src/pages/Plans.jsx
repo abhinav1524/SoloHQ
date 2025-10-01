@@ -29,7 +29,8 @@ const Plans = () => {
         userId: user._id,
         subscriptionPlan: plan.planName,
         price: plan.price,
-        features:plan.features
+        features:plan.features,
+        durationInMonths:plan.durationInMonths
       });
 
       const order = data.order;
