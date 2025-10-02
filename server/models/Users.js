@@ -15,7 +15,7 @@ const subscriptionSchema = new mongoose.Schema({
 const userSchema = new mongoose.Schema({
   name: String,
   email: { type: String, unique: true },
-  phone: { type: String, required: true },
+  phone: { type: String, unique: true },
   password: String,
   role: { type: String, default: "user" },
   subscription: subscriptionSchema,  // <-- NEW SUBDOCUMENT
@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: String,
   resetPasswordExpires: Date,
   googleId: { type: String },
+  isProfileComplete: { type: Boolean, default: false },
   twoFactorEnabled: { type: Boolean, default: false },
   otpSecret: String,
   createdAt: { type: Date, default: Date.now },
@@ -37,8 +38,11 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
+  if (!this.isModified("password") || !this.password) {
+    return next(); // skip hashing if password is not set
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 

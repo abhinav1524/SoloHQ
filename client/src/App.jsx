@@ -21,6 +21,7 @@ import ResetPassword from "./pages/ResetPassword";
 import GenerateCaption from "./pages/GenerateCaption";
 import Plans from "./pages/Plans";
 import BillingInfo from "./pages/Billing";
+import CompleteProfile from "./pages/CompleteProfile";
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user } = useAuth();
@@ -57,6 +58,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/complete-profile" element={<CompleteProfile />}  />
           {/* Default redirect if not logged in */}
           <Route path="*" element={<PageNotFound/>} />
         </Routes>

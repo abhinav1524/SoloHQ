@@ -4,8 +4,10 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { googleLogin } from "../services/authService";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react"; // import icons
+import { GoogleLogin } from '@react-oauth/google';
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -17,19 +19,19 @@ export default function Login() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);   
+    setLoading(true);
     // console.log("Login submitted:", form);
     try {
-        const res =await api.post("/auth/login",form)
-        setUser(res.data); 
-        navigate("/")
-        toast.success(res.data.message || "login successfully! 🎉");
+      const res = await api.post("/auth/login", form)
+      setUser(res.data);
+      navigate("/")
+      toast.success(res.data.message || "login successfully! 🎉");
     } catch (error) {
-        toast.error(error.response?.data?.message || "login failed ❌");
-        // console.log("error",error)
-    }finally{
+      toast.error(error.response?.data?.message || "login failed ❌");
+      // console.log("error",error)
+    } finally {
       setLoading(false)
     }
   };
@@ -99,6 +101,30 @@ export default function Login() {
             {loading ? "logging in..." : "Sign In"}
           </button>
         </form>
+        <div className="mt-5">
+        <GoogleLogin
+          onSuccess={async (credentialResponse) => {
+            try {
+              const data = await googleLogin(credentialResponse.credential);
+              if (data.message === "Additional info required") {
+                // Redirect to complete profile form
+                navigate("/complete-profile", { state: { tempUserId: data.tempUserId, userId: data.userId, email: data.email, name: data.name } });
+              } else {
+                // User already complete → save to context/redux
+                setUser(data)
+                // console.log("Logged in user:", data);
+              }
+            } catch (error) {
+              toast.error(error.response?.data.message);
+              console.error("Google login failed:", error.response?.data || error.message);
+            }
+          }}
+          onError={() => {
+            toast.error("Login Failed");
+            console.log("Login Failed");
+          }}
+        />
+        </div>
         {/* forgot password route */}
         <div className="mt-6 text-center text-gray-300 text-sm">
           <Link to="/forgot-password">forgot password</Link>
