@@ -35,7 +35,7 @@ const getOrders = async (req, res) => {
 const getFilterOrders = async (req, res) => {
   try {
     const { status } = req.query; // get status from query string
-        // 1️⃣ Ensure user is authenticated
+    // 1️⃣ Ensure user is authenticated
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized: No user found" });
     }
@@ -45,13 +45,15 @@ const getFilterOrders = async (req, res) => {
         .status(400)
         .json({ message: "Status query parameter is required" });
     }
-
+        const today = new Date();
+        const startOfDay = new Date(today);
+        startOfDay.setHours(0, 0, 0, 0);
     // Fetch orders matching the status
-    const orders = await Order.find({userId: req.user._id, status: status })
-    .sort({createdAt:-1})
-    .populate("customerId","name phone email")
-    .populate("productId","name price")
-    .lean();
+    const orders = await Order.find({ userId: req.user._id, status: { $ne: "cancel" },createdAt: { $gte: startOfDay }})
+      .sort({ createdAt: -1 })
+      .populate("customerId", "name phone email")
+      .populate("productId", "name price")
+      .lean();
     ;
 
     if (!orders || orders.length === 0) {
@@ -82,7 +84,7 @@ const addOrder = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-    
+
     // 2️⃣ Check if enough stock
     if (product.stock < quantity) {
       return res.status(400).json({ message: "Not enough stock available" });
@@ -217,17 +219,18 @@ const deleteOrder = async (req, res) => {
 const updateOrderStatus = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate(
-      "customer",
+      "customerId",
       "name phone"
-    );
+    ).populate("productId", "name price");
 
     if (!order) return res.status(404).json({ message: "Order not found" });
 
+    // Update status
     order.status = req.body.status || order.status;
     await order.save();
 
-    // Optional WhatsApp notification on status update
-    if (order.customer && order.customer.phone) {
+    // Optional WhatsApp notification
+    if (order.customer && order.customer.name && order.customer.phone) {
       await sendWhatsAppMessage(
         order.customer.phone,
         `✅ Hi ${order.customer.name}, your order #${order._id} status has been updated to *${order.status}*.`
@@ -236,12 +239,14 @@ const updateOrderStatus = async (req, res) => {
 
     res.json({
       ...order.toObject(),
-      date: formatDate(order.date),
+      date: order.date ? formatDate(order.date) : null,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error updating order", error });
+    console.error(error); // 🔥 log full error to backend console
+    res.status(500).json({ message: error.message });
   }
 };
+
 
 // calculating today sale
 

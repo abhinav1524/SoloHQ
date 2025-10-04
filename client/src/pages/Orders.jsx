@@ -3,6 +3,7 @@ import {
   getOrders,
   createOrder,
   updateOrder,
+  updateOrderStatus,
   deleteOrder,
 } from "../services/orderService";
 import { getCustomers } from "../services/customerServices";
@@ -66,15 +67,22 @@ const Orders = () => {
     fetchDropdownData();
   }, []);
 
-  const handleStatusChange = (id, newStatus) => {
-    setOrders(
-      orders.map((order) =>
-        order._id === id ? { ...order, status: newStatus } : order
-      )
-    );
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const updatedOrder = await updateOrderStatus(id, { status: newStatus });
+      setOrders(
+        orders.map((order) =>
+          order._id === id ? updatedOrder : order
+        )
+      );
+      toast.success(`Order status updated to ${newStatus} ✅`);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Failed to update order status ❌");
+    }
   };
 
-const handleProductChange = (productId, setProduct, setPrice) => {
+  const handleProductChange = (productId, setProduct, setPrice) => {
     setProduct(productId);
     const selected = products.find((p) => p._id === productId);
     setPrice(selected ? selected.price : "");
@@ -126,16 +134,16 @@ const handleProductChange = (productId, setProduct, setPrice) => {
       setShowAddForm(false);
       // ✅ Check if the backend sent a feature restriction message
       if (newOrder.featureMessage) {
-          toast.error(newOrder.featureMessage); // show warning
+        toast.error(newOrder.featureMessage); // show warning
       } else {
         toast.success("Order added successfully 🎉");
       }
     } catch (error) {
       console.error("Error adding order:", error);
       toast.error(error.response?.data?.message || "Unable to add order ❌");
-    }finally {
-    setIsAdding(false); // enable button again
-  }
+    } finally {
+      setIsAdding(false); // enable button again
+    }
   };
 
   // Edit Order
@@ -199,7 +207,7 @@ const handleProductChange = (productId, setProduct, setPrice) => {
   };
 
   const pendingCount = orders.filter((o) => o.status === "pending").length;
-  const completedCount = orders.filter((o) => o.status === "completed").length;
+  const completedCount = orders.filter((o) => o.status === "complete").length;
   const cancelledCount = orders.filter((o) => o.status === "cancel").length;
 
   // Filter + Search + Pagination
@@ -287,7 +295,7 @@ const handleProductChange = (productId, setProduct, setPrice) => {
             <label className="block mb-1 font-medium">Product</label>
             <select
               value={newProduct}
-              onChange={(e) =>  handleProductChange(e.target.value, setNewProduct, setNewPrice)}
+              onChange={(e) => handleProductChange(e.target.value, setNewProduct, setNewPrice)}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
             >
@@ -360,11 +368,10 @@ const handleProductChange = (productId, setProduct, setPrice) => {
             <button
               type="submit"
               disabled={isAdding}
-             className={`px-4 py-2 rounded text-white ${
-                isAdding
+              className={`px-4 py-2 rounded text-white ${isAdding
                   ? "bg-green-400 cursor-not-allowed"
                   : "bg-green-600 hover:bg-green-700"
-              }`}
+                }`}
             >
               {isAdding ? "Adding..." : "Add Order"}
             </button>
@@ -379,7 +386,7 @@ const handleProductChange = (productId, setProduct, setPrice) => {
             <label className="block mb-1 font-medium">Product</label>
             <select
               value={editProduct}
-              onChange={(e) =>  handleProductChange(e.target.value, setNewProduct, setNewPrice)}
+              onChange={(e) => handleProductChange(e.target.value, setNewProduct, setNewPrice)}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
             >
@@ -460,15 +467,14 @@ const handleProductChange = (productId, setProduct, setPrice) => {
 
       {/* Filter Buttons */}
       <div className="flex gap-2 mb-4 overflow-x-auto flex-nowrap whitespace-nowrap">
-        {["all", "pending", "completed", "cancel"].map((status) => (
+        {["all", "pending", "complete", "cancel"].map((status) => (
           <button
             key={status}
             onClick={() => setFilter(status)}
-            className={`px-4 py-2 rounded font-medium shadow-sm ${
-              filter === status
+            className={`px-4 py-2 rounded font-medium shadow-sm ${filter === status
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 hover:bg-gray-300"
-            }`}
+              }`}
           >
             <span className="capitalize">{status}</span>
           </button>
@@ -500,13 +506,12 @@ const handleProductChange = (productId, setProduct, setPrice) => {
                 <td className="p-3">{order.price}</td>
                 <td className="p-3">{order.date}</td>
                 <td
-                  className={`p-3 font-semibold ${
-                    order.status === "pending"
+                  className={`p-3 font-semibold ${order.status === "pending"
                       ? "text-orange-600"
                       : order.status === "completed"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
                 >
                   {order.status}
                 </td>
@@ -522,7 +527,7 @@ const handleProductChange = (productId, setProduct, setPrice) => {
                   )}
                   {order.status !== "completed" && (
                     <button
-                      onClick={() => handleStatusChange(order._id, "completed")}
+                      onClick={() => handleStatusChange(order._id, "complete")}
                       className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
                     >
                       Complete
@@ -570,11 +575,10 @@ const handleProductChange = (productId, setProduct, setPrice) => {
           <button
             key={i + 1}
             onClick={() => setCurrentPage(i + 1)}
-            className={`px-3 py-1 rounded ${
-              currentPage === i + 1
+            className={`px-3 py-1 rounded ${currentPage === i + 1
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 hover:bg-gray-300"
-            }`}
+              }`}
           >
             {i + 1}
           </button>

@@ -19,6 +19,12 @@ export const updateOrder = async (orderId, updatedData) => {
   return res.data;
 };
 
+// update the status of the order 
+export const updateOrderStatus = async (orderId,data) => {
+  const res = await api.put(`orders/status/${orderId}`,data);
+  console.log(res.data);
+  return res.data;
+};
 // Delete an order
 export const deleteOrder = async (orderId) => {
   const res = await api.delete(`/orders/${orderId}`);

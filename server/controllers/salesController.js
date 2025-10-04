@@ -23,6 +23,7 @@ if (filter === "daily") {
     const orders = await Order.find({
       userId: req.user._id,
       date: { $gte: startDate },
+      status: { $ne: "cancel" },
     })
       .populate("productId")
 

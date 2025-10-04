@@ -55,7 +55,6 @@ export default function Dashboard({ setIsSidebarOpen }) {
     (sum, o) => sum + (o.price || 0) * (o.quantity || 1),
     0
   );
-  console.log(orders)
 
 
   return (
