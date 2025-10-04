@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import {
   getProducts,
-  getProductById,
   addProduct,
   updateProduct,
   deleteProduct,
@@ -13,124 +12,139 @@ import { Edit, Trash2 } from "lucide-react";
 
 const Inventory = () => {
   const [products, setProducts] = useState([]);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
 
-  // Form state
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [stock, setStock] = useState("");
-  const [category, setCategory] = useState("");
-  const [brand, setBrand] = useState("");
+  // ✅ Object-based form states
+  const [addForm, setAddForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    category: "",
+    brand: "",
+  });
+
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    category: "",
+    brand: "",
+  });
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 5;
 
-  // Fetch Iventory Products
+  // Fetch inventory products
   useEffect(() => {
     getInventoryProducts();
   }, []);
+
   const getInventoryProducts = async () => {
     const data = await getProducts();
     setProducts(data);
   };
 
-  // Reset form
-  const resetForm = () => {
-    setName("");
-    setDescription("");
-    setPrice(0);
-    setStock("");
-    setCategory("");
-    setBrand("");
-    setEditingProduct(null);
-  };
+  // Reset Add Form
+  const resetAddForm = () =>
+    setAddForm({
+      name: "",
+      description: "",
+      price: "",
+      stock: "",
+      category: "",
+      brand: "",
+    });
 
-  // Add product
+  // Reset Edit Form
+  const resetEditForm = () =>
+    setEditForm({
+      name: "",
+      description: "",
+      price: "",
+      stock: "",
+      category: "",
+      brand: "",
+    });
+
+  // ✅ Add Product
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
       const newProduct = {
-        name,
-        description,
-        price: parseFloat(price),
-        stock: parseInt(stock, 10),
-        category,
-        brand,
+        ...addForm,
+        price: parseFloat(addForm.price),
+        stock: parseInt(addForm.stock, 10),
       };
+
       const res = await addProduct(newProduct);
       setProducts([res, ...products]);
-      resetForm();
+      resetAddForm();
       setShowAddForm(false);
       toast.success("Product added in inventory successfully! 🎉");
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "unable to add product ! ❌"
+        error.response?.data?.message || "Unable to add product ❌"
       );
       console.error("Error adding product:", error);
     }
   };
 
-  // Edit product
-const handleEditProduct = async (e) => {
-  e.preventDefault();
-  try {
-    const updatedProduct = {
-      name,
-      description,
-      price: parseFloat(price),   // ✅ fix
-      stock: parseInt(stock, 10), // ✅ fix
-      category,
-      brand,
-    };
+  // ✅ Edit Product
+  const handleEditProduct = async (e) => {
+    e.preventDefault();
+    try {
+      const updatedProduct = {
+        ...editForm,
+        price: parseFloat(editForm.price),
+        stock: parseInt(editForm.stock, 10),
+      };
 
-    const res = await updateProduct(editingProduct._id, updatedProduct);
+      const res = await updateProduct(editingProduct._id, updatedProduct);
+      setProducts(
+        products.map((p) => (p._id === editingProduct._id ? res : p))
+      );
 
-    setProducts(
-      products.map((p) => (p._id === editingProduct._id ? res : p))
-    );
+      resetEditForm();
+      setShowEditForm(false);
+      toast.success("Product updated successfully! 🎉");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Unable to update product ❌"
+      );
+      console.error("Error updating product:", error);
+    }
+  };
 
-    resetForm();
-    setShowEditForm(false);
-    toast.success("Product updated successfully! 🎉");
-  } catch (error) {
-    toast.error(
-      error.response?.data?.message || "Unable to update product ❌"
-    );
-    console.error("Error updating product:", error);
-  }
-};
+  // ✅ Delete Product
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
 
-  // Delete product
-const handleDeleteProduct = async (id) => {
-  if (!window.confirm("Are you sure you want to delete this product?"))
-    return;
-  try {
-    await deleteProduct(id);
-    setProducts(products.filter((p) => p._id !== id)); // ✅ match backend _id
-    toast.success("Product deleted successfully! 🎉");
-  } catch (error) {
-    toast.error(
-      error.response?.data?.message || "Unable to delete product ❌"
-    );
-    console.error("Error deleting product:", error);
-  }
-};
+    try {
+      await deleteProduct(id);
+      setProducts(products.filter((p) => p._id !== id));
+      toast.success("Product deleted successfully! 🎉");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Unable to delete product ❌"
+      );
+      console.error("Error deleting product:", error);
+    }
+  };
 
-
-  // Search filter
+  // ✅ Search filter
   const filteredProducts = products.filter(
     (p) =>
       (p.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-      String(p.id).includes(searchQuery)
+      String(p._id).includes(searchQuery)
   );
 
-  // Pagination logic
+  // ✅ Pagination logic
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
   const currentProducts = filteredProducts.slice(
@@ -144,11 +158,15 @@ const handleDeleteProduct = async (id) => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-4">
         <button
-          onClick={() => setShowAddForm(true)}
+          onClick={() => {
+            resetAddForm();
+            setShowAddForm(true);
+          }}
           className="px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700"
         >
           Add New Product
         </button>
+
         <input
           type="text"
           placeholder="Search by ID or name"
@@ -193,18 +211,21 @@ const handleDeleteProduct = async (id) => {
                   <button
                     onClick={() => {
                       setEditingProduct(p);
-                      setName(p.name);
-                      setDescription(p.description);
-                      setPrice(p.price);
-                      setStock(p.stock);
-                      setCategory(p.category);
-                      setBrand(p.brand);
+                      setEditForm({
+                        name: p.name,
+                        description: p.description,
+                        price: p.price,
+                        stock: p.stock,
+                        category: p.category,
+                        brand: p.brand,
+                      });
                       setShowEditForm(true);
                     }}
                     className="px-3 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
                   >
                     <Edit size={18} />
                   </button>
+
                   <button
                     onClick={() => handleDeleteProduct(p._id)}
                     className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
@@ -253,54 +274,19 @@ const handleDeleteProduct = async (id) => {
       <Modal isOpen={showAddForm} onClose={() => setShowAddForm(false)}>
         <form onSubmit={handleAddProduct} className="space-y-4">
           <h2 className="text-lg font-semibold">Add Product</h2>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Product Name"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Product Description"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-          <input
-            type="text"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="Product Price"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-          <input
-            type="text"
-            value={stock}
-            onChange={(e) => setStock(e.target.value)}
-            placeholder="Stock"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-          <input
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Product Category"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-          <input
-            type="text"
-            value={brand}
-            onChange={(e) => setBrand(e.target.value)}
-            placeholder="Product Brand"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
+          {Object.keys(addForm).map((key) => (
+            <input
+              key={key}
+              type={key === "price" || key === "stock" ? "number" : "text"}
+              value={addForm[key]}
+              onChange={(e) =>
+                setAddForm({ ...addForm, [key]: e.target.value })
+              }
+              placeholder={`Product ${key.charAt(0).toUpperCase() + key.slice(1)}`}
+              className="w-full border rounded px-3 py-2"
+              required
+            />
+          ))}
           <div className="flex justify-end gap-2">
             <button
               type="button"
@@ -323,54 +309,19 @@ const handleDeleteProduct = async (id) => {
       <Modal isOpen={showEditForm} onClose={() => setShowEditForm(false)}>
         <form onSubmit={handleEditProduct} className="space-y-4">
           <h2 className="text-lg font-semibold">Edit Product</h2>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Product Name"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-          <input
-            type="text"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Product Description"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-          <input
-            type="text"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="Product Price"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-          <input
-            type="number"
-            value={stock}
-            onChange={(e) => setStock(e.target.value)}
-            placeholder="Stock"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-          <input
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Product Category"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-          <input
-            type="text"
-            value={brand}
-            onChange={(e) => setBrand(e.target.value)}
-            placeholder="Product Brand"
-            className="w-full border rounded px-3 py-2"
-            required
-          />
+          {Object.keys(editForm).map((key) => (
+            <input
+              key={key}
+              type={key === "price" || key === "stock" ? "number" : "text"}
+              value={editForm[key]}
+              onChange={(e) =>
+                setEditForm({ ...editForm, [key]: e.target.value })
+              }
+              placeholder={`Product ${key.charAt(0).toUpperCase() + key.slice(1)}`}
+              className="w-full border rounded px-3 py-2"
+              required
+            />
+          ))}
           <div className="flex justify-end gap-2">
             <button
               type="button"

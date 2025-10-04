@@ -10,9 +10,19 @@ const canUseWhatsApp = (user) => {
 
   const now = new Date();
 
-  // Trial users within trial period
-  return user.subscription === "trial" && user.trialEndDate && user.trialEndDate > now;
+  // Trial users: check trialEndDate
+  if (user.trialEndDate && user.trialEndDate > now) {
+    return true;
+  }
+
+  // Paid users: check subscription status
+  if (user.subscription && user.subscription.status === "active") {
+    return true;
+  }
+
+  return false;
 };
+
 
 // Run every minute
 cron.schedule("* * * * *", async () => {
@@ -48,6 +58,7 @@ cron.schedule("* * * * *", async () => {
       console.log("📌 Campaign:", campaign.title);
       console.log("   User:", user.name, "| Phone:", user.phone, "| TZ:", userTimezone);
       console.log("   Subscription:", user.subscription, "| TrialEnd:", user.trialEndDate,);
+      console.log("   status:", user.subscription.status);
       console.log("   Now (User TZ):", nowUserTz.format("YYYY-MM-DD HH:mm:ss"));
       console.log("   Reminder (User TZ):", reminderMoment.format("YYYY-MM-DD HH:mm:ss"));
       console.log("   Diff (ms):", diff);

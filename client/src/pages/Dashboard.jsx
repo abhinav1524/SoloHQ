@@ -42,19 +42,20 @@ export default function Dashboard({ setIsSidebarOpen }) {
   }, []);
 
   // Get today's date in YYYY-MM-DD format
-const todayString = new Date().toISOString().split("T")[0];
+  const todayString = new Date().toISOString().split("T")[0];
 
-const todaysOrders = Array.isArray(orders)
-  ? orders.filter((o) => {
+  const todaysOrders = Array.isArray(orders)
+    ? orders.filter((o) => {
       const orderDate = new Date(o.createdAt).toISOString().split("T")[0];
       return orderDate === todayString;
     })
-  : [];
+    : [];
 
-const todaysSale = todaysOrders.reduce(
-  (sum, o) => sum + (o.price || 0) * (o.quantity || 1),
-  0
-);
+  const todaysSale = todaysOrders.reduce(
+    (sum, o) => sum + (o.price || 0) * (o.quantity || 1),
+    0
+  );
+  console.log(orders)
 
 
   return (
@@ -67,7 +68,7 @@ const todaysSale = todaysOrders.reduce(
           ₹{todaysSale}
         </p>
         <p className="text-sm text-gray-600 mt-1">
-        {todaysOrders.length} order{todaysOrders.length !== 1 ? "s" : ""}
+          {todaysOrders.length} order{todaysOrders.length !== 1 ? "s" : ""}
         </p>
       </div>
 
@@ -90,20 +91,25 @@ const todaysSale = todaysOrders.reduce(
             {orders.length === 0 ? (
               <p className="text-gray-500">No pending orders.</p>
             ) : (
-              orders.slice(0,3).map((o) => (
+              orders.slice(0, 3).map((o) => (
                 <li key={o._id} className="flex justify-between">
                   <div>
                     <h2 className="font-medium">
-                      {o.user?.name || "Customer"}
+                      {o.customerId?.name || o.user?.name || "Customer"}
                     </h2>
                     <span className="text-sm">
-                      {o.orderItems?.map((i) => i.name).join(", ")}
+                      {(
+                        o.orderItems?.length
+                          ? o.orderItems.map((i) => i.name).join(", ")
+                          : o.productId?.name || "—"
+                      )}
                     </span>
                   </div>
                   <span className="text-gray-500 text-sm">
                     {new Date(o.createdAt).toLocaleDateString()}
                   </span>
                 </li>
+
               ))
             )}
           </ul>

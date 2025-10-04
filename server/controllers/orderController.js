@@ -35,6 +35,10 @@ const getOrders = async (req, res) => {
 const getFilterOrders = async (req, res) => {
   try {
     const { status } = req.query; // get status from query string
+        // 1️⃣ Ensure user is authenticated
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized: No user found" });
+    }
 
     if (!status) {
       return res
@@ -43,7 +47,12 @@ const getFilterOrders = async (req, res) => {
     }
 
     // Fetch orders matching the status
-    const orders = await Order.find({ status: status });
+    const orders = await Order.find({userId: req.user._id, status: status })
+    .sort({createdAt:-1})
+    .populate("customerId","name phone email")
+    .populate("productId","name price")
+    .lean();
+    ;
 
     if (!orders || orders.length === 0) {
       return res
